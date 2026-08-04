@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mint: #CFEFDF;
+  --color-forest: #1F6B52;
+  --color-forest-dark: #144837;
+  --color-purewhite: #FFFFFF;
+  --color-softgold: #D4AF37;
+  --color-charcoal: #263238;
+  --color-softbg: #F8FBF9;
+  
+  --font-sans: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+  --font-arabic: 'Amiri', serif;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+  background-color: #F8FBF9;
+  color: #263238;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-arabic {
+  font-family: 'Amiri', serif;
+}
+
+.card-shadow {
+  box-shadow: 0 10px 25px -5px rgba(31, 107, 82, 0.08), 0 8px 10px -6px rgba(31, 107, 82, 0.05);
+}
+
+.card-shadow-lg {
+  box-shadow: 0 20px 30px -10px rgba(31, 107, 82, 0.12), 0 10px 15px -5px rgba(31, 107, 82, 0.08);
+}
+
+.smooth-press {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-press:active {
+  transform: scale(0.96);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8FBF9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CFEFDF;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1F6B52;
+}

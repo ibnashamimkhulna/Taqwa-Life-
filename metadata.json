@@ -1,0 +1,6 @@
+{
+  "name": "TAQWA LIFE",
+  "description": "প্রিমিয়াম ইসলামিক অ্যাপ - সালাতের সময়সূচী, আল-কুরআন, আযকার, কাজাহ ট্র্যাকার, কিবলা কম্পাস ও ডিজিটাল ইবাদত ট্র্যাকার।",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
