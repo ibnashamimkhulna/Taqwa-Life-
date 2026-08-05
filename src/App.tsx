@@ -16,13 +16,15 @@ import { QazaSalahView } from './components/views/QazaSalahView';
 import { HijriCalendarView } from './components/views/HijriCalendarView';
 import { QiblaCompassView } from './components/views/QiblaCompassView';
 import { SettingsView } from './components/views/SettingsView';
+import { GamifiedDeenView } from './components/views/GamifiedDeenView';
+import { PremiumFeaturesModal } from './components/views/PremiumFeaturesModal';
 
 import { TabType, Language, QazaRecord, AppSettings, PrayerTime } from './types';
 import { INITIAL_PRAYER_TIMES, INITIAL_QAZA_RECORD } from './data/prayersData';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [activeSubView, setActiveSubView] = useState<'qaza' | 'hijri' | 'qibla' | 'settings' | null>(null);
+  const [activeSubView, setActiveSubView] = useState<'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium' | null>(null);
   
   const [language, setLanguage] = useState<Language>('BN');
   const [district, setDistrict] = useState<string>('ঢাকা (Dhaka)');
@@ -129,6 +131,20 @@ export default function App() {
             />
           )}
 
+          {activeSubView === 'gamified' && (
+            <GamifiedDeenView
+              onBack={() => setActiveSubView(null)}
+              language={language}
+            />
+          )}
+
+          {activeSubView === 'premium' && (
+            <PremiumFeaturesModal
+              onBack={() => setActiveSubView(null)}
+              language={language}
+            />
+          )}
+
           {activeSubView === null && (
             <>
               {activeTab === 'home' && (
@@ -194,6 +210,7 @@ export default function App() {
           onToggleLang={handleToggleLanguage}
           onSelectTab={handleTabChange}
           onOpenFeature={openFeatureModal}
+          onOpenSubView={setActiveSubView}
           district={district}
         />
 

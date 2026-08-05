@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { HabitGoal, Language, QazaRecord } from '../../types';
-import { User, Flame, CheckCircle2, Circle, Trophy, Target, Settings, Sliders, Bell, Globe } from 'lucide-react';
+import { User, Flame, CheckCircle2, Circle, Trophy, Target, Settings, Sliders, Bell, Globe, Crown, Sparkles } from 'lucide-react';
 
 interface ProfileTabProps {
   language: Language;
   district: string;
   onDistrictChange: (d: string) => void;
   qazaRecord: QazaRecord;
-  onOpenSubView: (view: 'qaza' | 'hijri' | 'qibla' | 'settings') => void;
+  onOpenSubView: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium') => void;
   onOpenFeature: (title: string, desc: string) => void;
 }
 
@@ -153,6 +153,35 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Gamification & Premium Highlights */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => onOpenSubView('gamified')}
+          className="p-3.5 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl border border-amber-300/40 flex items-center gap-3 card-shadow hover:brightness-105 smooth-press cursor-pointer text-left"
+        >
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-yellow-200 shrink-0 shadow-xs">
+            <Trophy className="w-5 h-5 text-yellow-200" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-white">দ্বীন গেম্স (XP)</h4>
+            <p className="text-[10px] text-amber-100">কুইজ খেলে রিওয়ার্ডস নিন</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onOpenSubView('premium')}
+          className="p-3.5 bg-gradient-to-br from-emerald-700 to-forest-dark text-white rounded-2xl border border-emerald-400/40 flex items-center gap-3 card-shadow hover:brightness-105 smooth-press cursor-pointer text-left"
+        >
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-softgold shrink-0 shadow-xs">
+            <Crown className="w-5 h-5 text-softgold" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-white">তাকওয়া প্রিমিয়াম</h4>
+            <p className="text-[10px] text-mint">রোডম্যাপ ও ফিচারসমূহ</p>
+          </div>
+        </button>
       </div>
 
       {/* Quick Action Navigation Buttons */}

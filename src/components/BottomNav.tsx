@@ -1,5 +1,6 @@
 import React from 'react';
-import { Home, Compass, Sparkles, BookOpen, User } from 'lucide-react';
+import { Home, Compass, BookOpen, User } from 'lucide-react';
+import { TasbihIcon } from './icons/TasbihIcon';
 import { TabType, Language } from '../types';
 
 interface BottomNavProps {
@@ -24,9 +25,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, language, onTab
     },
     {
       id: 'dhikr',
-      labelBn: 'আযকার',
-      labelEn: 'Adhkar',
-      icon: <Sparkles className="w-5 h-5 mb-0.5" />
+      labelBn: 'তাসবিহ/আযকার',
+      labelEn: 'Tasbih',
+      icon: <TasbihIcon className="w-5 h-5 mb-0.5" />
     },
     {
       id: 'quran',

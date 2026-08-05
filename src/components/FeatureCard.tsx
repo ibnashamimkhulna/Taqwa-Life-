@@ -7,12 +7,12 @@ import {
   Sun, 
   SunMedium, 
   BookOpen, 
-  Sparkles, 
   Compass, 
   PieChart, 
   Target, 
   Settings 
 } from 'lucide-react';
+import { TasbihIcon } from './icons/TasbihIcon';
 import { FeatureKey, Language } from '../types';
 
 interface FeatureCardProps {
@@ -31,7 +31,7 @@ export const FEATURE_ICONS: Record<FeatureKey, React.ReactNode> = {
   'Ishraq': <Sun className="w-5 h-5 text-forest" />,
   'Duha': <SunMedium className="w-5 h-5 text-forest" />,
   'Holy Quran': <BookOpen className="w-5 h-5 text-forest" />,
-  'Daily Adhkar': <Sparkles className="w-5 h-5 text-forest" />,
+  'Daily Adhkar': <TasbihIcon className="w-5 h-5 text-forest" />,
   'Qibla Compass': <Compass className="w-5 h-5 text-forest" />,
   'Progress': <PieChart className="w-5 h-5 text-forest" />,
   'Goals': <Target className="w-5 h-5 text-forest" />,

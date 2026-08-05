@@ -11,8 +11,11 @@ import {
   Share2, 
   Info, 
   Heart,
-  Globe
+  Globe,
+  Trophy,
+  Crown
 } from 'lucide-react';
+import { TasbihIcon } from './icons/TasbihIcon';
 import { Language, TabType } from '../types';
 
 interface SideDrawerProps {
@@ -22,6 +25,7 @@ interface SideDrawerProps {
   onToggleLang: () => void;
   onSelectTab: (tab: TabType) => void;
   onOpenFeature: (title: string, desc: string) => void;
+  onOpenSubView?: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium') => void;
   district: string;
 }
 
@@ -32,6 +36,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   onToggleLang,
   onSelectTab,
   onOpenFeature,
+  onOpenSubView,
   district
 }) => {
   if (!isOpen) return null;
@@ -114,8 +119,36 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
             }}
             className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-mint/40 text-charcoal font-medium text-xs smooth-press text-left cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-forest" />
-            <span>{language === 'BN' ? 'দৈনিক আযকার ও তাসবীহ' : 'Daily Adhkar & Tasbeeh'}</span>
+            <TasbihIcon className="w-4 h-4 text-forest" />
+            <span>{language === 'BN' ? 'দৈনিক আযকার ও ডিজিটাল তাসবীহ' : 'Daily Adhkar & Tasbeeh'}</span>
+          </button>
+
+          <div className="my-3 border-t border-gray-100" />
+
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">
+            {language === 'BN' ? 'গেমিফিকেশন ও প্রিমিয়াম' : 'GAMIFICATION & PREMIUM'}
+          </p>
+
+          <button
+            onClick={() => {
+              onClose();
+              if (onOpenSubView) onOpenSubView('gamified');
+            }}
+            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 text-charcoal font-bold text-xs smooth-press text-left cursor-pointer shadow-xs"
+          >
+            <Trophy className="w-4 h-4 text-amber-600" />
+            <span>{language === 'BN' ? 'দ্বীন লার্নিং (Duolingo Style)' : 'Deen Learning (Gamified)'}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onClose();
+              if (onOpenSubView) onOpenSubView('premium');
+            }}
+            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 text-charcoal font-bold text-xs smooth-press text-left cursor-pointer shadow-xs"
+          >
+            <Crown className="w-4 h-4 text-softgold" />
+            <span>{language === 'BN' ? 'তাকওয়া প্রিমিয়াম ফিচারসমূহ' : 'Taqwa Premium Features'}</span>
           </button>
 
           <div className="my-3 border-t border-gray-100" />

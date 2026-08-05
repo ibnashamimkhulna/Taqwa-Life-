@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FeatureCard } from '../FeatureCard';
 import { FeatureKey, Language, TabType, PrayerTime } from '../../types';
-import { Quote, Sparkles, Building2, Compass, BookOpen, Clock } from 'lucide-react';
+import { Quote, Sparkles, Building2, Compass, BookOpen, Clock, Flame, Trophy, Crown, ChevronRight } from 'lucide-react';
 import { DAILY_QUOTES } from '../../data/quotesData';
 import { calculatePrayerTimes } from '../../utils/prayerCalculator';
 
@@ -9,7 +9,7 @@ interface HomeTabProps {
   language: Language;
   onOpenFeature: (title: string, desc: string) => void;
   onSwitchTab: (tab: TabType) => void;
-  onOpenSubView: (view: 'qaza' | 'hijri' | 'qibla' | 'settings') => void;
+  onOpenSubView: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium') => void;
   prayers: PrayerTime[];
   district: string;
 }
@@ -132,6 +132,57 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           >
             {language === 'BN' ? 'বিস্তারিত দেখুন' : 'View Details'}
           </button>
+        </div>
+      </div>
+
+      {/* Gamification Duolingo Banner & Premium Quick Entry */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Gamified Deen Card */}
+        <div
+          onClick={() => onOpenSubView('gamified')}
+          className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-3.5 rounded-2xl card-shadow cursor-pointer smooth-press relative overflow-hidden group border border-amber-400/30"
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-amber-100 flex items-center gap-1">
+              <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
+              ৫ দিনের স্ট্রীক
+            </span>
+            <Trophy className="w-4 h-4 text-yellow-200" />
+          </div>
+          <h4 className="text-xs font-black text-white mt-1">
+            দ্বীন লার্নিং (Duolingo)
+          </h4>
+          <p className="text-[10px] text-amber-100 mt-0.5 leading-tight">
+            কুইজ খেলে সাওয়াব পয়েন্ট ও র্যাঙ্ক অর্জন করুন
+          </p>
+          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/20 text-[10px] font-bold text-yellow-100">
+            <span>৪৫০ XP</span>
+            <span className="flex items-center">শুরু করুন <ChevronRight className="w-3 h-3" /></span>
+          </div>
+        </div>
+
+        {/* Taqwa Premium Roadmap Card */}
+        <div
+          onClick={() => onOpenSubView('premium')}
+          className="bg-gradient-to-br from-emerald-700 via-teal-800 to-forest-dark text-white p-3.5 rounded-2xl card-shadow cursor-pointer smooth-press relative overflow-hidden group border border-emerald-400/30"
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] bg-softgold text-charcoal px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1">
+              <Crown className="w-3 h-3" />
+              PRO রোডম্যাপ
+            </span>
+            <Sparkles className="w-4 h-4 text-softgold" />
+          </div>
+          <h4 className="text-xs font-black text-white mt-1">
+            তাকওয়া প্রিমিয়াম
+          </h4>
+          <p className="text-[10px] text-mint/90 mt-0.5 leading-tight">
+            এআই ফতোয়া ও অফলাইন কুরআনের প্রস্তাবনা
+          </p>
+          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/20 text-[10px] font-bold text-mint">
+            <span>ফিচারসমূহের প্রস্তাবনা</span>
+            <span className="flex items-center">দেখুন <ChevronRight className="w-3 h-3" /></span>
+          </div>
         </div>
       </div>
 
