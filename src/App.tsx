@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { Modal } from './components/Modal';
+import { LocationModal } from './components/LocationModal';
 import { SideDrawer } from './components/SideDrawer';
 import { SearchModal } from './components/SearchModal';
 import { NotificationsModal } from './components/NotificationsModal';
@@ -47,6 +48,7 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   // Custom Feature Modal
   const [modalData, setModalData] = useState<{
@@ -170,6 +172,7 @@ export default function App() {
                   onOpenSubView={setActiveSubView}
                   prayers={prayers}
                   district={district}
+                  onOpenLocationModal={() => setIsLocationModalOpen(true)}
                 />
               )}
 
@@ -178,8 +181,12 @@ export default function App() {
                   prayers={prayers}
                   language={language}
                   district={district}
-                  onDistrictChange={setDistrict}
+                  onDistrictChange={(newDist) => {
+                    setDistrict(newDist);
+                    setSettings((prev) => ({ ...prev, district: newDist }));
+                  }}
                   onOpenFeature={openFeatureModal}
+                  onOpenLocationModal={() => setIsLocationModalOpen(true)}
                 />
               )}
 
@@ -246,6 +253,17 @@ export default function App() {
           isOpen={isNotificationsOpen}
           onClose={() => setIsNotificationsOpen(false)}
           language={language}
+        />
+
+        {/* Location & District Modal */}
+        <LocationModal
+          isOpen={isLocationModalOpen}
+          onClose={() => setIsLocationModalOpen(false)}
+          currentDistrict={district}
+          onSelectDistrict={(newDist) => {
+            setDistrict(newDist);
+            setSettings((prev) => ({ ...prev, district: newDist }));
+          }}
         />
 
         {/* Bottom Navigation Bar */}

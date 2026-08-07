@@ -1,34 +1,113 @@
 import { PrayerTime } from '../types';
 
-// District time offsets (in minutes relative to Dhaka)
-export const DISTRICT_OFFSETS: Record<string, number> = {
-  'ঢাকা (Dhaka)': 0,
-  'চট্টগ্রাম (Chittagong)': -5,
-  'সিলেট (Sylhet)': -6,
-  'রাজশাহী (Rajshahi)': 7,
-  'খুলনা (Khulna)': 5,
-  'বরিশাল (Barisal)': 2,
-  'রংপুর (Rangpur)': 6,
-  'ময়মনসিংহ (Mymensingh)': 1,
-  'কুমিল্লা (Comilla)': -3,
-  'নোয়াখালী (Noakhali)': -2,
-  'বগুড়া (Bogra)': 4,
-  'ফেনী (Feni)': -3,
-  'কুড়িগ্রাম (Kurigram)': 7,
-  'দিনাজপুর (Dinajpur)': 8,
-  'কক্সবাজার (Cox\'s Bazar)': -6,
-  'যশোর (Jessore)': 6,
-  'কুষ্টিয়া (Kushtia)': 6,
-  'টাঙ্গাইল (Tangail)': 2,
-  'পাবনা (Pabna)': 5,
-  'ফরিদপুর (Faridpur)': 2,
-  'গাজীপুর (Gazipur)': 0,
-  'নারায়ণগঞ্জ (Narayanganj)': -1,
-  'ভোলা (Bhola)': -1,
-  'পটুয়াখালী (Patuakhali)': 1,
-  'চাঁদপুর (Chandpur)': -2,
-  'ব্রাহ্মণবাড়িয়া (Brahmanbaria)': -3
-};
+export interface DistrictInfo {
+  nameBn: string;
+  nameEn: string;
+  fullName: string;
+  lat: number;
+  lon: number;
+  offset: number; // minutes relative to Dhaka
+}
+
+export const ALL_BANGLADESH_DISTRICTS: DistrictInfo[] = [
+  { nameBn: 'ঢাকা', nameEn: 'Dhaka', fullName: 'ঢাকা (Dhaka)', lat: 23.8103, lon: 90.4125, offset: 0 },
+  { nameBn: 'চট্টগ্রাম', nameEn: 'Chittagong', fullName: 'চট্টগ্রাম (Chittagong)', lat: 22.3569, lon: 91.7832, offset: -5 },
+  { nameBn: 'সিলেট', nameEn: 'Sylhet', fullName: 'সিলেট (Sylhet)', lat: 24.8949, lon: 91.8687, offset: -6 },
+  { nameBn: 'রাজশাহী', nameEn: 'Rajshahi', fullName: 'রাজশাহী (Rajshahi)', lat: 24.3745, lon: 88.6042, offset: 7 },
+  { nameBn: 'খুলনা', nameEn: 'Khulna', fullName: 'খুলনা (Khulna)', lat: 22.8456, lon: 89.5403, offset: 5 },
+  { nameBn: 'বরিশাল', nameEn: 'Barisal', fullName: 'বরিশাল (Barisal)', lat: 22.7010, lon: 90.3535, offset: 2 },
+  { nameBn: 'রংপুর', nameEn: 'Rangpur', fullName: 'রংপুর (Rangpur)', lat: 25.7439, lon: 89.2752, offset: 6 },
+  { nameBn: 'ময়মনসিংহ', nameEn: 'Mymensingh', fullName: 'ময়মনসিংহ (Mymensingh)', lat: 24.7471, lon: 90.4203, offset: 1 },
+  { nameBn: 'কুমিল্লা', nameEn: 'Cumilla', fullName: 'কুমিল্লা (Cumilla)', lat: 23.4607, lon: 91.1809, offset: -3 },
+  { nameBn: 'নোয়াখালী', nameEn: 'Noakhali', fullName: 'নোয়াখালী (Noakhali)', lat: 22.8696, lon: 91.0991, offset: -2 },
+  { nameBn: 'বগুড়া', nameEn: 'Bogra', fullName: 'বগুড়া (Bogra)', lat: 24.8481, lon: 89.3730, offset: 4 },
+  { nameBn: 'ফেনী', nameEn: 'Feni', fullName: 'ফেনী (Feni)', lat: 23.0159, lon: 91.3976, offset: -3 },
+  { nameBn: 'কুড়িগ্রাম', nameEn: 'Kurigram', fullName: 'কুড়িগ্রাম (Kurigram)', lat: 25.8054, lon: 89.6361, offset: 7 },
+  { nameBn: 'দিনাজপুর', nameEn: 'Dinajpur', fullName: 'দিনাজপুর (Dinajpur)', lat: 25.6217, lon: 88.6354, offset: 8 },
+  { nameBn: 'কক্সবাজার', nameEn: 'Cox\'s Bazar', fullName: 'কক্সবাজার (Cox\'s Bazar)', lat: 21.4272, lon: 92.0058, offset: -6 },
+  { nameBn: 'যশোর', nameEn: 'Jashore', fullName: 'যশোর (Jashore)', lat: 23.1664, lon: 89.2081, offset: 6 },
+  { nameBn: 'কুষ্টিয়া', nameEn: 'Kushtia', fullName: 'কুষ্টিয়া (Kushtia)', lat: 23.9013, lon: 88.9560, offset: 6 },
+  { nameBn: 'টাঙ্গাইল', nameEn: 'Tangail', fullName: 'টাঙ্গাইল (Tangail)', lat: 24.2513, lon: 89.9167, offset: 2 },
+  { nameBn: 'পাবনা', nameEn: 'Pabna', fullName: 'পাবনা (Pabna)', lat: 24.0108, lon: 89.2330, offset: 5 },
+  { nameBn: 'ফরিদপুর', nameEn: 'Faridpur', fullName: 'ফরিদপুর (Faridpur)', lat: 23.6070, lon: 89.8429, offset: 2 },
+  { nameBn: 'গাজীপুর', nameEn: 'Gazipur', fullName: 'গাজীপুর (Gazipur)', lat: 23.9999, lon: 90.4203, offset: 0 },
+  { nameBn: 'নারায়ণগঞ্জ', nameEn: 'Narayanganj', fullName: 'নারায়ণগঞ্জ (Narayanganj)', lat: 23.6238, lon: 90.5000, offset: -1 },
+  { nameBn: 'ভোলা', nameEn: 'Bhola', fullName: 'ভোলা (Bhola)', lat: 22.6859, lon: 90.6482, offset: -1 },
+  { nameBn: 'পটুয়াখালী', nameEn: 'Patuakhali', fullName: 'পটুয়াখালী (Patuakhali)', lat: 22.3596, lon: 90.3298, offset: 1 },
+  { nameBn: 'চাঁদপুর', nameEn: 'Chandpur', fullName: 'চাঁদপুর (Chandpur)', lat: 23.2333, lon: 90.6667, offset: -2 },
+  { nameBn: 'ব্রাহ্মণবাড়িয়া', nameEn: 'Brahmanbaria', fullName: 'ব্রাহ্মণবাড়িয়া (Brahmanbaria)', lat: 23.9571, lon: 91.1119, offset: -3 },
+  { nameBn: 'বাগেরহাট', nameEn: 'Bagerhat', fullName: 'বাগেরহাট (Bagerhat)', lat: 22.6516, lon: 89.7859, offset: 4 },
+  { nameBn: 'বান্দরবান', nameEn: 'Bandarban', fullName: 'বান্দরবান (Bandarban)', lat: 21.8311, lon: 92.3686, offset: -7 },
+  { nameBn: 'বরগুনা', nameEn: 'Barguna', fullName: 'বরগুনা (Barguna)', lat: 22.1570, lon: 90.1223, offset: 2 },
+  { nameBn: 'চুয়াডাঙ্গা', nameEn: 'Chuadanga', fullName: 'চুয়াডাঙ্গা (Chuadanga)', lat: 23.6401, lon: 88.8418, offset: 7 },
+  { nameBn: 'গাইবান্ধা', nameEn: 'Gaibandha', fullName: 'গাইবান্ধা (Gaibandha)', lat: 25.3288, lon: 89.5403, offset: 5 },
+  { nameBn: 'গোপালগঞ্জ', nameEn: 'Gopalganj', fullName: 'গোপালগঞ্জ (Gopalganj)', lat: 23.0050, lon: 89.8266, offset: 3 },
+  { nameBn: 'হবিগঞ্জ', nameEn: 'Habiganj', fullName: 'হবিগঞ্জ (Habiganj)', lat: 24.3749, lon: 91.4155, offset: -5 },
+  { nameBn: 'জামালপুর', nameEn: 'Jamalpur', fullName: 'জামালপুর (Jamalpur)', lat: 24.9375, lon: 89.9377, offset: 2 },
+  { nameBn: 'ঝিনাইদহ', nameEn: 'Jhenaidah', fullName: 'ঝিনাইদহ (Jhenaidah)', lat: 23.5448, lon: 89.1539, offset: 6 },
+  { nameBn: 'জয়পুরহাট', nameEn: 'Joypurhat', fullName: 'জয়পুরহাট (Joypurhat)', lat: 25.1017, lon: 89.0270, offset: 6 },
+  { nameBn: 'খাগড়াছড়ি', nameEn: 'Khagrachhari', fullName: 'খাগড়াছড়ি (Khagrachhari)', lat: 23.1193, lon: 91.9847, offset: -5 },
+  { nameBn: 'কিশোরগঞ্জ', nameEn: 'Kishorganj', fullName: 'কিশোরগঞ্জ (Kishorganj)', lat: 24.4449, lon: 90.7765, offset: -1 },
+  { nameBn: 'লক্ষ্মীপুর', nameEn: 'Lakshmipur', fullName: 'লক্ষ্মীপুর (Lakshmipur)', lat: 22.9425, lon: 90.8412, offset: -2 },
+  { nameBn: 'লালমনিরহাট', nameEn: 'Lalmonirhat', fullName: 'লালমনিরহাট (Lalmonirhat)', lat: 25.9923, lon: 89.2847, offset: 6 },
+  { nameBn: 'মাদারীপুর', nameEn: 'Madaripur', fullName: 'মাদারীপুর (Madaripur)', lat: 23.1641, lon: 90.1897, offset: 1 },
+  { nameBn: 'মাগুরা', nameEn: 'Magura', fullName: 'মাগুরা (Magura)', lat: 23.4873, lon: 89.4199, offset: 5 },
+  { nameBn: 'মানিকগঞ্জ', nameEn: 'Manikganj', fullName: 'মানিকগঞ্জ (Manikganj)', lat: 23.8644, lon: 90.0047, offset: 1 },
+  { nameBn: 'মেহেরপুর', nameEn: 'Meherpur', fullName: 'মেহেরপুর (Meherpur)', lat: 23.7622, lon: 88.6318, offset: 7 },
+  { nameBn: 'মৌলভীবাজার', nameEn: 'Moulvibazar', fullName: 'মৌলভীবাজার (Moulvibazar)', lat: 24.4829, lon: 91.7774, offset: -5 },
+  { nameBn: 'মুন্সীগঞ্জ', nameEn: 'Munshiganj', fullName: 'মুন্সীগঞ্জ (Munshiganj)', lat: 23.5422, lon: 90.5305, offset: -1 },
+  { nameBn: 'নওগাঁ', nameEn: 'Naogaon', fullName: 'নওগাঁ (Naogaon)', lat: 24.7936, lon: 88.9318, offset: 6 },
+  { nameBn: 'নড়াইল', nameEn: 'Narail', fullName: 'নড়াইল (Narail)', lat: 23.1725, lon: 89.5126, offset: 5 },
+  { nameBn: 'নরসিংদী', nameEn: 'Narsingdi', fullName: 'নরসিংদী (Narsingdi)', lat: 23.9193, lon: 90.7201, offset: -1 },
+  { nameBn: 'নাটোর', nameEn: 'Natore', fullName: 'নাটোর (Natore)', lat: 24.4102, lon: 88.9834, offset: 6 },
+  { nameBn: 'চাঁপাইনবাবগঞ্জ', nameEn: 'Chapainawabganj', fullName: 'চাঁপাইনবাবগঞ্জ (Chapainawabganj)', lat: 24.5965, lon: 88.2775, offset: 8 },
+  { nameBn: 'নেত্রকোণা', nameEn: 'Netrokona', fullName: 'নেত্রকোণা (Netrokona)', lat: 24.8700, lon: 90.7270, offset: -1 },
+  { nameBn: 'নীলফামারী', nameEn: 'Nilphamari', fullName: 'নীলফামারী (Nilphamari)', lat: 25.9318, lon: 88.8560, offset: 7 },
+  { nameBn: 'পঞ্চগড়', nameEn: 'Panchagarh', fullName: 'পঞ্চগড় (Panchagarh)', lat: 26.3411, lon: 88.5541, offset: 9 },
+  { nameBn: 'পিরোজপুর', nameEn: 'Pirojpur', fullName: 'পিরোজপুর (Pirojpur)', lat: 22.5841, lon: 89.9720, offset: 3 },
+  { nameBn: 'রাজবাড়ী', nameEn: 'Rajbari', fullName: 'রাজবাড়ী (Rajbari)', lat: 23.7574, lon: 89.6444, offset: 3 },
+  { nameBn: 'রাঙ্গামাটি', nameEn: 'Rangamati', fullName: 'রাঙ্গামাটি (Rangamati)', lat: 22.6533, lon: 92.1753, offset: -6 },
+  { nameBn: 'সাতক্ষীরা', nameEn: 'Satkhira', fullName: 'সাতক্ষীরা (Satkhira)', lat: 22.7185, lon: 89.0705, offset: 6 },
+  { nameBn: 'শরীয়তপুর', nameEn: 'Shariatpur', fullName: 'শরীয়তপুর (Shariatpur)', lat: 23.2423, lon: 90.4348, offset: 0 },
+  { nameBn: 'শেরপুর', nameEn: 'Sherpur', fullName: 'শেরপুর (Sherpur)', lat: 25.0201, lon: 90.0153, offset: 2 },
+  { nameBn: 'সিরাজগঞ্জ', nameEn: 'Sirajganj', fullName: 'সিরাজগঞ্জ (Sirajganj)', lat: 24.4534, lon: 89.7008, offset: 3 },
+  { nameBn: 'সুনামগঞ্জ', nameEn: 'Sunamganj', fullName: 'সুনামগঞ্জ (Sunamganj)', lat: 25.0658, lon: 91.3950, offset: -5 },
+  { nameBn: 'ঠাকুরগাঁও', nameEn: 'Thakurgaon', fullName: 'ঠাকুরগাঁও (Thakurgaon)', lat: 26.0337, lon: 88.4617, offset: 8 }
+];
+
+// Build map for quick offset lookup
+export const DISTRICT_OFFSETS: Record<string, number> = ALL_BANGLADESH_DISTRICTS.reduce((acc, dist) => {
+  acc[dist.fullName] = dist.offset;
+  acc[dist.nameBn] = dist.offset;
+  acc[dist.nameEn] = dist.offset;
+  return acc;
+}, {} as Record<string, number>);
+
+// Find nearest district from GPS latitude & longitude
+export function findNearestDistrict(lat: number, lon: number): DistrictInfo {
+  let minDistance = Infinity;
+  let closest = ALL_BANGLADESH_DISTRICTS[0];
+
+  for (const dist of ALL_BANGLADESH_DISTRICTS) {
+    const dLat = (dist.lat - lat) * (Math.PI / 180);
+    const dLon = (dist.lon - lon) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat * (Math.PI / 180)) *
+        Math.cos(dist.lat * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = 6371 * c; // Earth radius in km
+
+    if (distance < minDistance) {
+      minDistance = distance;
+      closest = dist;
+    }
+  }
+
+  return closest;
+}
 
 // Standard base prayer times for Dhaka (in 24-hour format)
 const BASE_TIMES = {

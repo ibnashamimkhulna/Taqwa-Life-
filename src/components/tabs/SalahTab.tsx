@@ -10,13 +10,15 @@ interface SalahTabProps {
   district: string;
   onDistrictChange: (district: string) => void;
   onOpenFeature: (title: string, desc: string) => void;
+  onOpenLocationModal?: () => void;
 }
 
 export const SalahTab: React.FC<SalahTabProps> = ({
   language,
   district,
   onDistrictChange,
-  onOpenFeature
+  onOpenFeature,
+  onOpenLocationModal
 }) => {
   const [madhhab, setMadhhab] = useState<'Hanafi' | 'Shafi'>('Hanafi');
   const [alerts, setAlerts] = useState<Record<string, boolean>>({
@@ -79,7 +81,17 @@ export const SalahTab: React.FC<SalahTabProps> = ({
       <div className="bg-white p-3.5 rounded-xl border border-gray-100 card-shadow flex items-center justify-between gap-2">
         {/* District Selector */}
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <MapPin className="w-4 h-4 text-forest shrink-0" />
+          {onOpenLocationModal ? (
+            <button
+              onClick={onOpenLocationModal}
+              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-forest rounded-lg border border-emerald-200 transition-colors cursor-pointer shrink-0"
+              title="GPS দিয়ে লোকেশন ট্র্যাক বা জেলা সিলেক্ট করুন"
+            >
+              <MapPin className="w-4 h-4 text-forest" />
+            </button>
+          ) : (
+            <MapPin className="w-4 h-4 text-forest shrink-0" />
+          )}
           <select
             value={district}
             onChange={(e) => onDistrictChange(e.target.value)}

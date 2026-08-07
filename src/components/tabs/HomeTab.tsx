@@ -12,6 +12,7 @@ interface HomeTabProps {
   onOpenSubView: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium') => void;
   prayers: PrayerTime[];
   district: string;
+  onOpenLocationModal?: () => void;
 }
 
 export const HomeTab: React.FC<HomeTabProps> = ({
@@ -19,7 +20,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onOpenFeature,
   onSwitchTab,
   onOpenSubView,
-  district
+  district,
+  onOpenLocationModal
 }) => {
   const currentQuote = DAILY_QUOTES[0];
 
@@ -126,17 +128,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Top Header Row: District GPS Selector & Hijri Date */}
         <div className="flex justify-between items-center mb-3 text-xs relative z-10 border-b border-white/15 pb-2.5">
           <div className="flex items-center gap-1.5 font-bold">
-            <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 text-amber-200 flex items-center gap-1.5 shadow-xs">
+            <button
+              onClick={onOpenLocationModal}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 text-amber-200 flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+              title="অবস্থান ও জেলা পরিবর্তন করুন"
+            >
               <Building2 className="w-3.5 h-3.5 text-amber-300" />
               <span>{district}</span>
-              <button
-                onClick={handleDetectLocation}
-                className="ml-1 text-white hover:text-amber-300 transition-transform active:rotate-180 cursor-pointer"
-                title="GPS থেকে অবস্থান নিশ্চিত করুন"
-              >
-                {isDetectingGps ? '⏳' : '🔄'}
-              </button>
-            </span>
+              <span className="ml-1 text-xs text-white hover:text-amber-300 transition-transform">🔄</span>
+            </button>
           </div>
 
           <div className="text-right font-bold text-amber-300 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-300/30 text-[11px]">

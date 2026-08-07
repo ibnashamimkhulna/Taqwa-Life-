@@ -1,19 +1,7 @@
 import { PrayerTime, QazaRecord } from '../types';
+import { ALL_BANGLADESH_DISTRICTS } from '../utils/prayerCalculator';
 
-export const DISTRICTS_BD = [
-  'ঢাকা (Dhaka)',
-  'চট্টগ্রাম (Chittagong)',
-  'সিলেট (Sylhet)',
-  'রাজশাহী (Rajshahi)',
-  'খুলনা (Khulna)',
-  'বরিশাল (Barisal)',
-  'রংপুর (Rangpur)',
-  'ময়মনসিংহ (Mymensingh)',
-  'কুমিল্লা (Comilla)',
-  'নোয়াখালী (Noakhali)',
-  'বগুড়া (Bogra)',
-  'ফেনী (Feni)'
-];
+export const DISTRICTS_BD = ALL_BANGLADESH_DISTRICTS.map((d) => d.fullName);
 
 export const INITIAL_PRAYER_TIMES: PrayerTime[] = [
   {
