@@ -146,7 +146,7 @@ export function getBanglaCalendarDate(date: Date = new Date()): string {
   return `${dayName}, ${toBanglaNumber(bDay)} ${banglaMonths[bMonthIndex]} ${toBanglaNumber(bYear)}`;
 }
 
-// Format date to Bangla Hijri Date using accurate Astronomical/Intl Islamic Calendar
+// Format date to Bangla Hijri Date using accurate Astronomical & Intl Islamic Calendar
 export function getBanglaHijriDate(date: Date = new Date()): string {
   const hijriMonthsBn = [
     'মহররম', 'সফর', 'রবিউল আউয়াল', 'রবিউস সানী',
@@ -155,55 +155,67 @@ export function getBanglaHijriDate(date: Date = new Date()): string {
   ];
 
   try {
-    const formatter = new Intl.DateTimeFormat('en-TN-u-ca-islamic-civil', {
+    const formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric'
     });
-    const parts = formatter.formatToParts(date);
-    let hDay = 1;
-    let hMonth = 1;
-    let hYear = 1448;
 
-    for (const part of parts) {
-      if (part.type === 'day') hDay = parseInt(part.value, 10);
-      if (part.type === 'month') hMonth = parseInt(part.value, 10);
-      if (part.type === 'year') hYear = parseInt(part.value, 10);
+    const isIslamic = formatter.resolvedOptions().calendar?.includes('islamic');
+
+    if (isIslamic) {
+      const parts = formatter.formatToParts(date);
+      let hDay = 1;
+      let hMonth = 1;
+      let hYear = 1448;
+
+      for (const part of parts) {
+        if (part.type === 'day') hDay = parseInt(part.value, 10);
+        if (part.type === 'month') hMonth = parseInt(part.value, 10);
+        if (part.type === 'year') hYear = parseInt(part.value, 10);
+      }
+
+      const monthName = hijriMonthsBn[hMonth - 1] || 'সফর';
+      return `${toBanglaNumber(hDay)} ${monthName} ${toBanglaNumber(hYear)} হি.`;
     }
-
-    const monthName = hijriMonthsBn[hMonth - 1] || 'সফর';
-    return `${toBanglaNumber(hDay)} ${monthName} ${toBanglaNumber(hYear)} হি.`;
   } catch (e) {
-    // Math fallback
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let m = month;
-    let y = year;
-    if (m < 3) {
-      y -= 1;
-      m += 12;
-    }
-
-    const a = Math.floor(y / 100);
-    const b = 2 - a + Math.floor(a / 4);
-    const jdn = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
-
-    const islamicJdn = jdn - 1948438.5;
-    const l = Math.floor(islamicJdn) + 10632;
-    const n = Math.floor((l - 1) / 10631);
-    const l1 = l - 10631 * n + 354;
-    const j = Math.floor((10982 - l1) / 5316) * Math.floor((50 * l1) / 17719) + Math.floor(l1 / 5670) * Math.floor((43 * l1) / 15238);
-    const l2 = l1 - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
-
-    const hM = Math.floor((24 * l2) / 709);
-    const hD = l2 - Math.floor((709 * hM) / 24);
-    const hY = 30 * n + j - 30;
-
-    const monthIndex = Math.max(0, Math.min(11, hM - 1));
-    return `${toBanglaNumber(hD)} ${hijriMonthsBn[monthIndex]} ${toBanglaNumber(hY)} হি.`;
+    // Ignore and use astronomical math
   }
+
+  // Reliable Kuwaiti Astronomical Algorithm Fallback
+  const day = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  let m = month + 1;
+  let y = year;
+  if (m < 3) {
+    y -= 1;
+    m += 12;
+  }
+
+  const a = Math.floor(y / 100);
+  const b = 2 - a + Math.floor(a / 4);
+  const jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+
+  const epoch = 1948439.5;
+  const daysSinceEpoch = jd - epoch;
+
+  const cycles = Math.floor((daysSinceEpoch - 1) / 10631);
+  const daysInCycle = daysSinceEpoch - 1 - cycles * 10631;
+
+  const yearInCycle = Math.floor((daysInCycle - 0.5) / 354.36667);
+  const dayInYear = Math.floor(daysInCycle - Math.floor(yearInCycle * 354.36667 + 0.5));
+
+  const hYear = cycles * 30 + yearInCycle + 1;
+  let hMonth = Math.floor((dayInYear + 29.5) / 29.5);
+  if (hMonth > 12) hMonth = 12;
+  if (hMonth < 1) hMonth = 1;
+
+  const hDay = Math.floor(dayInYear - Math.floor((hMonth - 1) * 29.5) + 1);
+
+  const monthName = hijriMonthsBn[hMonth - 1] || 'সফর';
+  return `${toBanglaNumber(hDay)} ${monthName} ${toBanglaNumber(hYear)} হি.`;
 }
 
 export interface DynamicPrayerState {
