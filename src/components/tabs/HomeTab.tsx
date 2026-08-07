@@ -81,58 +81,144 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     }
   };
 
-  const { currentWaqt, nextWaqt, currentTimeFormatted, remainingTimeFormatted, hijriDateBn } = prayerState;
+  const {
+    currentWaqt,
+    nextWaqt,
+    currentTimeFormatted,
+    remainingTimeFormatted,
+    hijriDateBn,
+    bengaliDateBn,
+    gregorianDateBn,
+    sunriseTimeFormatted,
+    sunsetTimeFormatted,
+    waqtRangeFormatted
+  } = prayerState;
+
+  // Handle auto GPS location click
+  const [isDetectingGps, setIsDetectingGps] = useState(false);
+
+  const handleDetectLocation = () => {
+    if ('geolocation' in navigator) {
+      setIsDetectingGps(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setIsDetectingGps(false);
+          // Auto detected position message
+          alert(`GPS অবস্থান পাওয়া গেছে! latitude: ${pos.coords.latitude.toFixed(2)}, longitude: ${pos.coords.longitude.toFixed(2)}. ঢাকা সালাতের সময় ব্যবহৃত হচ্ছে।`);
+        },
+        () => {
+          setIsDetectingGps(false);
+          alert('GPS লোকেশন পাওয়া যায়নি। ম্যানুয়াল জেলা পরিবর্তন করুন।');
+        }
+      );
+    }
+  };
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Welcome & Quick Info Banner */}
-      <div className="bg-gradient-to-br from-forest to-forest-dark text-white p-5 rounded-xl card-shadow relative overflow-hidden border border-forest/20">
-        <div className="absolute -right-6 -bottom-6 opacity-10 text-9xl pointer-events-none select-none font-serif">
+    <div className="space-y-4 animate-fade-in">
+      {/* Muslim Bangla App Style Top Main Banner */}
+      <div className="bg-gradient-to-br from-emerald-900 via-forest to-emerald-950 text-white p-4 sm:p-5 rounded-3xl shadow-xl shadow-emerald-950/20 relative overflow-hidden border border-amber-300/30">
+        {/* Subtle Arch Ornament Background */}
+        <div className="absolute -right-8 -bottom-8 opacity-15 text-9xl pointer-events-none select-none font-serif">
           🕌
         </div>
 
-        <div className="flex justify-between items-start mb-3 relative z-10">
+        {/* Top Header Row: District GPS Selector & Hijri Date */}
+        <div className="flex justify-between items-center mb-3 text-xs relative z-10 border-b border-white/15 pb-2.5">
+          <div className="flex items-center gap-1.5 font-bold">
+            <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 text-amber-200 flex items-center gap-1.5 shadow-xs">
+              <Building2 className="w-3.5 h-3.5 text-amber-300" />
+              <span>{district}</span>
+              <button
+                onClick={handleDetectLocation}
+                className="ml-1 text-white hover:text-amber-300 transition-transform active:rotate-180 cursor-pointer"
+                title="GPS থেকে অবস্থান নিশ্চিত করুন"
+              >
+                {isDetectingGps ? '⏳' : '🔄'}
+              </button>
+            </span>
+          </div>
+
+          <div className="text-right font-bold text-amber-300 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-300/30 text-[11px]">
+            {hijriDateBn}
+          </div>
+        </div>
+
+        {/* Middle Banner Content: Active Waqt & Sunrise/Sunset */}
+        <div className="flex justify-between items-end my-3 relative z-10">
           <div>
-            <div className="flex items-center gap-1.5 text-mint text-[10px] uppercase font-bold bg-white/20 px-2.5 py-1 rounded-full border border-white/10 w-fit">
-              <Clock className="w-3 h-3 text-mint animate-pulse" />
-              <span>{language === 'BN' ? 'বর্তমান ওয়াক্ত' : 'Current Prayer'}</span>
+            <div className="text-[10px] text-emerald-200 uppercase tracking-widest font-black flex items-center gap-1">
+              <Clock className="w-3 h-3 text-amber-300 animate-pulse" />
+              <span>বর্তমান ওয়াক্ত</span>
             </div>
-            <h2 className="text-xl font-bold mt-2 font-sans tracking-wide flex items-center gap-2">
-              <span>{language === 'BN' ? `${currentWaqt.nameBn} ওয়াক্ত` : `${currentWaqt.nameEn} Time`}</span>
+            <h2 className="text-2xl font-black mt-0.5 text-amber-300 font-sans tracking-wide drop-shadow-md">
+              {currentWaqt.nameBn}
             </h2>
-            <p className="text-[11px] text-mint/80 mt-0.5">
-              স্থান: {district}
+            <p className="text-xs text-white/90 font-bold mt-0.5 bg-white/10 px-2.5 py-0.5 rounded-lg w-fit border border-white/20">
+              {waqtRangeFormatted}
             </p>
           </div>
 
-          <div className="text-right relative z-10">
-            <span className="text-xs text-mint font-semibold block">
-              {hijriDateBn}
-            </span>
-            <p className="text-lg font-extrabold text-white tracking-wider mt-0.5 font-mono">
-              {currentTimeFormatted}
-            </p>
+          <div className="text-right space-y-1">
+            <div className="text-[11px] font-bold text-emerald-100 bg-black/20 backdrop-blur-sm px-2.5 py-1 rounded-xl border border-white/10">
+              <span>সূর্যোদয় {sunriseTimeFormatted}</span>
+              <span className="mx-1 text-amber-300">|</span>
+              <span>সূর্যাস্ত {sunsetTimeFormatted}</span>
+            </div>
+            <div className="text-[10px] bg-amber-400/30 text-amber-200 font-extrabold px-3 py-1 rounded-full border border-amber-300/40 text-center">
+              পরবর্তী: {nextWaqt.nameBn} ({remainingTimeFormatted} বাকি)
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-mint/90 pt-3 border-t border-white/10 relative z-10">
-          <span className="font-medium flex items-center gap-1">
-            <span>
-              {language === 'BN'
-                ? `পরবর্তী: ${nextWaqt.nameBn} (${nextWaqt.time})`
-                : `Next: ${nextWaqt.nameEn} (${nextWaqt.time})`}
-            </span>
-            <span className="text-[10px] bg-softgold/20 text-softgold font-bold px-2 py-0.5 rounded-full ml-1 border border-softgold/30">
-              বাকি: {remainingTimeFormatted}
-            </span>
-          </span>
-          <button
-            onClick={() => onSwitchTab('salah')}
-            className="underline cursor-pointer hover:text-white font-bold text-xs shrink-0 ml-2"
-          >
-            {language === 'BN' ? 'বিস্তারিত দেখুন' : 'View Details'}
-          </button>
+        {/* Bottom Banner Row: Gregorian and Bengali San Dates */}
+        <div className="pt-2.5 border-t border-white/15 flex justify-between items-center text-[11px] font-semibold text-emerald-100/90 relative z-10">
+          <span className="text-white font-bold">{gregorianDateBn}</span>
+          <span className="text-amber-200/90 font-bold">{bengaliDateBn}</span>
         </div>
+      </div>
+
+      {/* Quick Action Navigation Bar */}
+      <div className="bg-gradient-to-r from-emerald-900 to-forest p-2 rounded-2xl border border-amber-300/30 shadow-md flex justify-around items-center text-white text-[11px] font-bold">
+        <button
+          onClick={() => onSwitchTab('quran')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/15 rounded-xl transition-all cursor-pointer"
+        >
+          <BookOpen className="w-5 h-5 text-amber-300" />
+          <span>📖 কুরআন</span>
+        </button>
+
+        <button
+          onClick={() => onSwitchTab('salah')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/15 rounded-xl transition-all cursor-pointer"
+        >
+          <Clock className="w-5 h-5 text-amber-300" />
+          <span>⏰ সালাত</span>
+        </button>
+
+        <button
+          onClick={() => onSwitchTab('quran')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/15 rounded-xl transition-all cursor-pointer"
+        >
+          <Sparkles className="w-5 h-5 text-amber-300" />
+          <span>📖 হাফেজী</span>
+        </button>
+
+        <button
+          onClick={() => onSwitchTab('dhikr')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/15 rounded-xl transition-all cursor-pointer"
+        >
+          <Quote className="w-5 h-5 text-amber-300" />
+          <span>🤲 দোআ</span>
+        </button>
+
+        <button
+          onClick={() => onOpenSubView('qibla')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-white/15 rounded-xl transition-all cursor-pointer"
+        >
+          <Compass className="w-5 h-5 text-amber-300" />
+          <span>🧭 কিবলা</span>
+        </button>
       </div>
 
       {/* Gamification Duolingo Banner & Premium Quick Entry */}
@@ -140,58 +226,58 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Gamified Deen Card */}
         <div
           onClick={() => onOpenSubView('gamified')}
-          className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-3.5 rounded-2xl card-shadow cursor-pointer smooth-press relative overflow-hidden group border border-amber-400/30"
+          className="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-4 rounded-3xl shadow-md hover:shadow-lg cursor-pointer smooth-press relative overflow-hidden group border border-white/50"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-amber-100 flex items-center gap-1">
+            <span className="text-[10px] bg-white/30 backdrop-blur-md px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider text-amber-50 flex items-center gap-1 border border-white/30">
               <Flame className="w-3 h-3 text-yellow-200 fill-yellow-200" />
               ৫ দিনের স্ট্রীক
             </span>
             <Trophy className="w-4 h-4 text-yellow-200" />
           </div>
-          <h4 className="text-xs font-black text-white mt-1">
+          <h4 className="text-xs font-black text-white mt-2 drop-shadow-2xs">
             দ্বীন লার্নিং (Duolingo)
           </h4>
-          <p className="text-[10px] text-amber-100 mt-0.5 leading-tight">
+          <p className="text-[10px] text-amber-100 font-medium mt-0.5 leading-tight">
             কুইজ খেলে সাওয়াব পয়েন্ট ও র্যাঙ্ক অর্জন করুন
           </p>
-          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/20 text-[10px] font-bold text-yellow-100">
+          <div className="flex items-center justify-between mt-2.5 pt-1.5 border-t border-white/20 text-[10px] font-bold text-yellow-100">
             <span>৪৫০ XP</span>
-            <span className="flex items-center">শুরু করুন <ChevronRight className="w-3 h-3" /></span>
+            <span className="flex items-center gap-0.5">শুরু করুন <ChevronRight className="w-3 h-3" /></span>
           </div>
         </div>
 
         {/* Taqwa Premium Roadmap Card */}
         <div
           onClick={() => onOpenSubView('premium')}
-          className="bg-gradient-to-br from-emerald-700 via-teal-800 to-forest-dark text-white p-3.5 rounded-2xl card-shadow cursor-pointer smooth-press relative overflow-hidden group border border-emerald-400/30"
+          className="bg-gradient-to-br from-emerald-800 to-forest-dark text-white p-4 rounded-3xl shadow-md hover:shadow-lg cursor-pointer smooth-press relative overflow-hidden group border border-white/50"
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] bg-softgold text-charcoal px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1">
+            <span className="text-[10px] bg-amber-400 text-charcoal px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1 shadow-xs">
               <Crown className="w-3 h-3" />
               PRO রোডম্যাপ
             </span>
-            <Sparkles className="w-4 h-4 text-softgold" />
+            <Sparkles className="w-4 h-4 text-amber-300" />
           </div>
-          <h4 className="text-xs font-black text-white mt-1">
+          <h4 className="text-xs font-black text-white mt-2 drop-shadow-2xs">
             তাকওয়া প্রিমিয়াম
           </h4>
-          <p className="text-[10px] text-mint/90 mt-0.5 leading-tight">
+          <p className="text-[10px] text-emerald-100 font-medium mt-0.5 leading-tight">
             এআই ফতোয়া ও অফলাইন কুরআনের প্রস্তাবনা
           </p>
-          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/20 text-[10px] font-bold text-mint">
+          <div className="flex items-center justify-between mt-2.5 pt-1.5 border-t border-white/20 text-[10px] font-bold text-emerald-100">
             <span>ফিচারসমূহের প্রস্তাবনা</span>
-            <span className="flex items-center">দেখুন <ChevronRight className="w-3 h-3" /></span>
+            <span className="flex items-center gap-0.5">দেখুন <ChevronRight className="w-3 h-3" /></span>
           </div>
         </div>
       </div>
 
       {/* Section Title */}
       <div className="flex justify-between items-center px-1">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal">
+        <h3 className="text-xs font-extrabold uppercase tracking-widest text-emerald-950/80">
           {language === 'BN' ? 'ফিচারসমূহ' : 'FEATURES'}
         </h3>
-        <span className="text-xs text-forest font-bold bg-mint/50 px-2.5 py-0.5 rounded-full border border-forest/10">
+        <span className="text-[11px] text-emerald-900 font-extrabold bg-white/40 backdrop-blur-md px-3 py-0.5 rounded-full border border-white/60 shadow-2xs">
           ১২টি কার্ড
         </span>
       </div>
@@ -285,26 +371,26 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       </div>
 
       {/* Daily Quote Card */}
-      <div className="bg-white border border-gray-100 p-4 rounded-xl card-shadow relative overflow-hidden">
+      <div className="bg-white/45 backdrop-blur-xl border border-white/70 p-4 sm:p-5 rounded-3xl shadow-lg shadow-emerald-950/5 relative overflow-hidden">
         <div className="flex items-center space-x-2.5 mb-2.5">
-          <div className="w-8 h-8 rounded-full bg-mint/50 flex items-center justify-center text-forest border border-forest/10 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-forest/15 backdrop-blur-md flex items-center justify-center text-forest border border-white/80 shrink-0">
             <Quote className="w-4 h-4 text-forest" />
           </div>
-          <h4 className="text-xs font-bold text-forest uppercase tracking-wider">
+          <h4 className="text-xs font-extrabold text-forest uppercase tracking-wider">
             {language === 'BN' ? 'আজকের সুন্নাহ ও বাণী' : 'Daily Hadith & Wisdom'}
           </h4>
         </div>
 
-        <p className="text-xs text-charcoal/90 italic mb-2 leading-relaxed font-sans">
+        <p className="text-xs text-emerald-950 font-medium italic mb-2 leading-relaxed font-sans">
           {language === 'BN' ? currentQuote.quoteBn : currentQuote.quoteEn}
         </p>
 
-        <div className="flex justify-between items-center text-[10px] text-gray-400 pt-2 border-t border-gray-100">
-          <span className="flex items-center gap-1 text-forest font-semibold">
-            <Sparkles className="w-3 h-3 text-softgold" />
+        <div className="flex justify-between items-center text-[10px] text-emerald-900/70 pt-2 border-t border-emerald-900/10">
+          <span className="flex items-center gap-1 text-forest font-bold">
+            <Sparkles className="w-3 h-3 text-amber-500" />
             সহীহ রেফারেন্স
           </span>
-          <span className="font-semibold text-charcoal/70">
+          <span className="font-extrabold text-emerald-950">
             — {language === 'BN' ? currentQuote.sourceBn : currentQuote.sourceEn}
           </span>
         </div>

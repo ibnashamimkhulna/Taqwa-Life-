@@ -44,21 +44,31 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, language, onTab
   ];
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center h-16 px-1 z-30 shadow-lg">
+    <nav className="absolute bottom-0 left-0 right-0 bg-white/50 backdrop-blur-xl border-t border-white/60 flex justify-around items-center h-16 px-2 z-30 shadow-lg shadow-emerald-950/10">
       {navItems.map((item) => {
         const isActive = activeTab === item.id;
         return (
           <button
             key={item.id}
             onClick={() => onTabChange(item.id)}
-            className={`flex flex-col items-center justify-center w-1/5 py-1.5 transition-all duration-200 cursor-pointer ${
-              isActive ? 'text-forest' : 'text-gray-400 hover:text-gray-600'
+            className={`flex flex-col items-center justify-center w-1/5 py-1 transition-all duration-200 cursor-pointer ${
+              isActive ? 'text-forest' : 'text-emerald-950/60 hover:text-emerald-950'
             }`}
           >
-            <div className={`p-1 rounded-xl transition-all ${isActive ? 'bg-mint/40 scale-110' : ''}`}>
+            <div
+              className={`p-1.5 rounded-2xl transition-all duration-300 ${
+                isActive
+                  ? 'bg-forest/20 text-forest shadow-xs border border-forest/30 scale-105 backdrop-blur-md'
+                  : 'hover:bg-white/40'
+              }`}
+            >
               {item.icon}
             </div>
-            <span className={`text-[11px] leading-none mt-0.5 ${isActive ? 'font-bold text-forest' : 'font-medium'}`}>
+            <span
+              className={`text-[10px] leading-none mt-1 ${
+                isActive ? 'font-black text-forest' : 'font-semibold'
+              }`}
+            >
               {language === 'BN' ? item.labelBn : item.labelEn}
             </span>
           </button>

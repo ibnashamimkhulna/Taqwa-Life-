@@ -18,37 +18,37 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNotifications
 }) => {
   return (
-    <header className="flex items-center justify-between px-5 py-3.5 bg-white border-b border-gray-100 z-10 sticky top-0 shadow-xs">
+    <header className="flex items-center justify-between px-5 py-3.5 bg-white/40 backdrop-blur-xl border-b border-white/50 z-20 sticky top-0 shadow-xs">
       <button
         onClick={onOpenMenu}
         aria-label="Open Menu"
-        className="text-charcoal w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 smooth-press cursor-pointer border border-transparent hover:border-gray-100"
+        className="text-charcoal w-10 h-10 flex items-center justify-center rounded-2xl bg-white/40 hover:bg-white/70 backdrop-blur-md smooth-press cursor-pointer border border-white/60 shadow-xs"
       >
-        <Menu className="w-5 h-5 text-charcoal" />
+        <Menu className="w-5 h-5 text-forest" />
       </button>
 
       <div className="text-center">
-        <h1 className="text-lg font-bold tracking-wider text-forest leading-tight font-sans">
+        <h1 className="text-lg font-extrabold tracking-widest text-forest leading-tight font-sans drop-shadow-2xs">
           TAQWA LIFE
         </h1>
-        <p className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">
+        <p className="text-[10px] text-emerald-900/80 font-bold tracking-widest uppercase">
           {language === 'BN' ? 'তাকওয়া লাইফ' : 'PREMIUM ISLAMIC APP'}
         </p>
       </div>
 
-      <div className="flex items-center space-x-1 sm:space-x-2">
+      <div className="flex items-center space-x-1.5 sm:space-x-2">
         <button
           onClick={onOpenSearch}
           aria-label="Search"
-          className="text-charcoal w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 smooth-press cursor-pointer"
+          className="text-charcoal w-9 h-9 flex items-center justify-center rounded-2xl bg-white/40 hover:bg-white/70 backdrop-blur-md smooth-press cursor-pointer border border-white/60 shadow-xs"
         >
-          <Search className="w-4 h-4 text-charcoal" />
+          <Search className="w-4 h-4 text-forest" />
         </button>
 
         <button
           onClick={onToggleLang}
           title="Toggle Language"
-          className="text-forest bg-mint/50 px-2.5 py-1 rounded-full hover:bg-mint smooth-press text-xs font-bold border border-forest/10 cursor-pointer min-w-[36px] text-center"
+          className="text-forest bg-forest/15 hover:bg-forest/25 backdrop-blur-md px-3 py-1 rounded-full smooth-press text-xs font-black border border-white/60 cursor-pointer min-w-[38px] text-center shadow-xs"
         >
           {language}
         </button>
@@ -56,10 +56,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onOpenNotifications}
           aria-label="Notifications"
-          className="text-charcoal w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 smooth-press cursor-pointer relative"
+          className="text-charcoal w-9 h-9 flex items-center justify-center rounded-2xl bg-white/40 hover:bg-white/70 backdrop-blur-md smooth-press cursor-pointer border border-white/60 shadow-xs relative"
         >
-          <Bell className="w-4 h-4 text-charcoal" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-softgold rounded-full ring-2 ring-white"></span>
+          <Bell className="w-4 h-4 text-forest" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full ring-2 ring-white"></span>
         </button>
       </div>
     </header>

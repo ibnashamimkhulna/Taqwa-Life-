@@ -31,17 +31,21 @@ export async function fetchSurahVerses(surahNumber: number): Promise<Verse[]> {
       const bnAyahs = data.data[1].ayahs;
       const enAyahs = data.data[2].ayahs;
 
-      const verses: Verse[] = arabicAyahs.map((ayah: any, index: number) => {
+      let verses: Verse[] = arabicAyahs.map((ayah: any, index: number) => {
         let arabicText = ayah.text;
 
-        // For Surahs other than 1 and 9, if ayah 1 starts with Bismillah, strip it so Bismillah header handles it cleanly
-        if (surahNumber !== 1 && surahNumber !== 9 && index === 0) {
-          const bismillahPrefix = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-          const altBismillahPrefix = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-          if (arabicText.startsWith(bismillahPrefix)) {
-            arabicText = arabicText.replace(bismillahPrefix, "").trim();
-          } else if (arabicText.startsWith(altBismillahPrefix)) {
-            arabicText = arabicText.replace(altBismillahPrefix, "").trim();
+        // Strip Bismillah prefix if present at start of Ayah 1 so Bismillah is rendered as a standalone header
+        if (surahNumber !== 9 && index === 0) {
+          const bismillahPrefixes = [
+            "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+            "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+            "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ"
+          ];
+          for (const prefix of bismillahPrefixes) {
+            if (arabicText.startsWith(prefix)) {
+              arabicText = arabicText.replace(prefix, "").trim();
+              break;
+            }
           }
         }
 
@@ -53,6 +57,21 @@ export async function fetchSurahVerses(surahNumber: number): Promise<Verse[]> {
           translationEn: enAyahs[index]?.text || ""
         };
       });
+
+      // Filter out empty verse if stripping Bismillah made Ayah 1 empty (e.g. if API had Bismillah as entire Ayah 1)
+      if (surahNumber === 1 && verses[0] && (!verses[0].arabic || verses[0].arabic.length < 3)) {
+        verses = verses.slice(1).map((v, i) => ({ ...v, number: i + 1 }));
+      }
+
+      // Add Emdadia Waqf Sign Mim-Lam (مـ) to Surah Fatihah Ayah 6/7
+      if (surahNumber === 1 && verses.length >= 6) {
+        verses = verses.map((v) => {
+          if (v.number === 6 && !v.arabic.includes('مـ')) {
+            return { ...v, arabic: `${v.arabic}  مـ` };
+          }
+          return v;
+        });
+      }
 
       // Store in cache
       surahCache[surahNumber] = verses;

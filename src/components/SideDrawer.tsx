@@ -13,7 +13,8 @@ import {
   Heart,
   Globe,
   Trophy,
-  Crown
+  Crown,
+  FileText
 } from 'lucide-react';
 import { TasbihIcon } from './icons/TasbihIcon';
 import { Language, TabType } from '../types';
@@ -25,7 +26,7 @@ interface SideDrawerProps {
   onToggleLang: () => void;
   onSelectTab: (tab: TabType) => void;
   onOpenFeature: (title: string, desc: string) => void;
-  onOpenSubView?: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium') => void;
+  onOpenSubView?: (view: 'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium' | 'pdfquran') => void;
   district: string;
 }
 
@@ -149,6 +150,17 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
           >
             <Crown className="w-4 h-4 text-softgold" />
             <span>{language === 'BN' ? 'তাকওয়া প্রিমিয়াম ফিচারসমূহ' : 'Taqwa Premium Features'}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onClose();
+              if (onOpenSubView) onOpenSubView('pdfquran');
+            }}
+            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200/60 text-charcoal font-bold text-xs smooth-press text-left cursor-pointer shadow-xs mt-2"
+          >
+            <FileText className="w-4 h-4 text-emerald-700" />
+            <span>{language === 'BN' ? 'আপনার নিজস্ব PDF কুরআন রিডার' : 'Custom PDF Quran Reader'}</span>
           </button>
 
           <div className="my-3 border-t border-gray-100" />

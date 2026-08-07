@@ -1,7 +1,7 @@
 import { PrayerTime } from '../types';
 
 // District time offsets (in minutes relative to Dhaka)
-const DISTRICT_OFFSETS: Record<string, number> = {
+export const DISTRICT_OFFSETS: Record<string, number> = {
   'ঢাকা (Dhaka)': 0,
   'চট্টগ্রাম (Chittagong)': -5,
   'সিলেট (Sylhet)': -6,
@@ -13,19 +13,34 @@ const DISTRICT_OFFSETS: Record<string, number> = {
   'কুমিল্লা (Comilla)': -3,
   'নোয়াখালী (Noakhali)': -2,
   'বগুড়া (Bogra)': 4,
-  'ফেনী (Feni)': -3
+  'ফেনী (Feni)': -3,
+  'কুড়িগ্রাম (Kurigram)': 7,
+  'দিনাজপুর (Dinajpur)': 8,
+  'কক্সবাজার (Cox\'s Bazar)': -6,
+  'যশোর (Jessore)': 6,
+  'কুষ্টিয়া (Kushtia)': 6,
+  'টাঙ্গাইল (Tangail)': 2,
+  'পাবনা (Pabna)': 5,
+  'ফরিদপুর (Faridpur)': 2,
+  'গাজীপুর (Gazipur)': 0,
+  'নারায়ণগঞ্জ (Narayanganj)': -1,
+  'ভোলা (Bhola)': -1,
+  'পটুয়াখালী (Patuakhali)': 1,
+  'চাঁদপুর (Chandpur)': -2,
+  'ব্রাহ্মণবাড়িয়া (Brahmanbaria)': -3
 };
 
 // Standard base prayer times for Dhaka (in 24-hour format)
 const BASE_TIMES = {
   fajr: { hour: 4, minute: 22 },
-  sunrise: { hour: 5, minute: 40 },
+  sunrise: { hour: 5, minute: 38 },
   ishraq: { hour: 6, minute: 0 },
   duha: { hour: 9, minute: 30 },
   dhuhr: { hour: 12, minute: 15 },
   asr: { hour: 16, minute: 30 },
-  maghrib: { hour: 18, minute: 35 },
-  isha: { hour: 20, minute: 0 },
+  sunset: { hour: 18, minute: 38 },
+  maghrib: { hour: 18, minute: 38 },
+  isha: { hour: 19, minute: 55 },
   tahajjud: { hour: 2, minute: 30 }
 };
 
@@ -47,32 +62,148 @@ export function format12Hour(hour: number, minute: number, lang: 'BN' | 'EN' = '
   const minStr = minute < 10 ? `0${minute}` : `${minute}`;
 
   if (lang === 'BN') {
-    return `${toBanglaNumber(hourStr)}:${toBanglaNumber(minStr)} ${period}`;
+    return `${toBanglaNumber(hourStr)}:${toBanglaNumber(minStr)}`;
   }
   return `${hourStr}:${minStr} ${period}`;
 }
 
-// Format date to Bangla Hijri Date
-export function getBanglaHijriDate(date: Date = new Date()): string {
-  // Approximate Hijri conversion algorithm for Bangladesh region
-  const day = date.getDate();
-  const month = date.getMonth(); // 0 - 11
-  const year = date.getFullYear();
+// Get day name in Bangla
+export function getBanglaDayName(date: Date = new Date()): string {
+  const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+  return days[date.getDay()];
+}
 
-  // Simple Islamic month calendar mapping approximation
+// Get full Gregorian date in Bangla
+export function getBanglaGregorianDate(date: Date = new Date()): string {
+  const months = [
+    'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+    'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+  ];
+  const dayName = getBanglaDayName(date);
+  const day = toBanglaNumber(date.getDate() < 10 ? `০${date.getDate()}` : date.getDate());
+  const monthName = months[date.getMonth()];
+  const year = toBanglaNumber(date.getFullYear());
+
+  return `${dayName} ${day} ${monthName}, ${year}`;
+}
+
+// Get Bengali San Calendar date (Official Bangladesh standard revised calendar)
+export function getBanglaCalendarDate(date: Date = new Date()): string {
+  const dayNames = ['ইয়াওমুল আহাদ', 'ইয়াওমুল ইছনাইন', 'ইয়াওমুল ছুলাছা', 'ইয়াওমুল আরবাআ', 'ইয়াওমুল খামীস', 'ইয়াওমুল জুমআ', 'ইয়াওমুস সাবত'];
+  const dayName = dayNames[date.getDay()];
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0 - 11
+  const day = date.getDate();
+
+  const banglaMonths = ['বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন', 'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'];
+
+  let bYear = year - 593; // Default for Apr 14 - Dec 31
+  if (month < 3 || (month === 3 && day < 14)) {
+    bYear = year - 594; // Before Pahela Baishakh
+  }
+
+  let bMonthIndex = 0;
+  let bDay = 1;
+
+  if (month === 0) {
+    if (day >= 15) { bMonthIndex = 9; bDay = day - 14; }
+    else { bMonthIndex = 8; bDay = day + 16; }
+  } else if (month === 1) {
+    if (day >= 14) { bMonthIndex = 10; bDay = day - 13; }
+    else { bMonthIndex = 9; bDay = day + 17; }
+  } else if (month === 2) {
+    if (day >= 16) { bMonthIndex = 11; bDay = day - 15; }
+    else { bMonthIndex = 10; bDay = day + 15; }
+  } else if (month === 3) {
+    if (day >= 14) { bMonthIndex = 0; bDay = day - 13; }
+    else { bMonthIndex = 11; bDay = day + 16; }
+  } else if (month === 4) {
+    if (day >= 15) { bMonthIndex = 1; bDay = day - 14; }
+    else { bMonthIndex = 0; bDay = day + 17; }
+  } else if (month === 5) {
+    if (day >= 15) { bMonthIndex = 2; bDay = day - 14; }
+    else { bMonthIndex = 1; bDay = day + 17; }
+  } else if (month === 6) {
+    if (day >= 16) { bMonthIndex = 3; bDay = day - 15; }
+    else { bMonthIndex = 2; bDay = day + 16; }
+  } else if (month === 7) {
+    if (day >= 16) { bMonthIndex = 4; bDay = day - 15; }
+    else { bMonthIndex = 3; bDay = day + 16; }
+  } else if (month === 8) {
+    if (day >= 16) { bMonthIndex = 5; bDay = day - 15; }
+    else { bMonthIndex = 4; bDay = day + 16; }
+  } else if (month === 9) {
+    if (day >= 17) { bMonthIndex = 6; bDay = day - 16; }
+    else { bMonthIndex = 5; bDay = day + 15; }
+  } else if (month === 10) {
+    if (day >= 16) { bMonthIndex = 7; bDay = day - 15; }
+    else { bMonthIndex = 6; bDay = day + 15; }
+  } else if (month === 11) {
+    if (day >= 16) { bMonthIndex = 8; bDay = day - 15; }
+    else { bMonthIndex = 7; bDay = day + 15; }
+  }
+
+  return `${dayName}, ${toBanglaNumber(bDay)} ${banglaMonths[bMonthIndex]} ${toBanglaNumber(bYear)}`;
+}
+
+// Format date to Bangla Hijri Date using accurate Astronomical/Intl Islamic Calendar
+export function getBanglaHijriDate(date: Date = new Date()): string {
   const hijriMonthsBn = [
-    'মহররম', 'সফর', 'রবীউল আউয়াল', 'রবীউস সানী',
-    'জমাদিউল আউয়াল', 'জমাদিউস সানী', 'রজব', 'শা’বান',
+    'মহররম', 'সফর', 'রবিউল আউয়াল', 'রবিউস সানী',
+    'জমাদিউল আউয়াল', 'জমাদিউস সানী', 'রজব', 'শাবান',
     'রমজান', 'শাওয়াল', 'জিলকদ', 'জিলহজ্জ'
   ];
 
-  // Calculated approximate day in Hijri year 1448 / 1447
-  // Reference: August 2026 ~ Rabi' al-Awwal / Rabi' al-Thani 1448 AH
-  let hijriDay = ((day + 18) % 30) || 1;
-  let hijriMonthIndex = (month + 1) % 12; // Approx mapping
-  let hijriYear = year - 578;
+  try {
+    const formatter = new Intl.DateTimeFormat('en-TN-u-ca-islamic-civil', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    });
+    const parts = formatter.formatToParts(date);
+    let hDay = 1;
+    let hMonth = 1;
+    let hYear = 1448;
 
-  return `${toBanglaNumber(hijriDay)} ${hijriMonthsBn[hijriMonthIndex]} ${toBanglaNumber(hijriYear)} হিজরি`;
+    for (const part of parts) {
+      if (part.type === 'day') hDay = parseInt(part.value, 10);
+      if (part.type === 'month') hMonth = parseInt(part.value, 10);
+      if (part.type === 'year') hYear = parseInt(part.value, 10);
+    }
+
+    const monthName = hijriMonthsBn[hMonth - 1] || 'সফর';
+    return `${toBanglaNumber(hDay)} ${monthName} ${toBanglaNumber(hYear)} হি.`;
+  } catch (e) {
+    // Math fallback
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let m = month;
+    let y = year;
+    if (m < 3) {
+      y -= 1;
+      m += 12;
+    }
+
+    const a = Math.floor(y / 100);
+    const b = 2 - a + Math.floor(a / 4);
+    const jdn = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+
+    const islamicJdn = jdn - 1948438.5;
+    const l = Math.floor(islamicJdn) + 10632;
+    const n = Math.floor((l - 1) / 10631);
+    const l1 = l - 10631 * n + 354;
+    const j = Math.floor((10982 - l1) / 5316) * Math.floor((50 * l1) / 17719) + Math.floor(l1 / 5670) * Math.floor((43 * l1) / 15238);
+    const l2 = l1 - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+
+    const hM = Math.floor((24 * l2) / 709);
+    const hD = l2 - Math.floor((709 * hM) / 24);
+    const hY = 30 * n + j - 30;
+
+    const monthIndex = Math.max(0, Math.min(11, hM - 1));
+    return `${toBanglaNumber(hD)} ${hijriMonthsBn[monthIndex]} ${toBanglaNumber(hY)} হি.`;
+  }
 }
 
 export interface DynamicPrayerState {
@@ -82,6 +213,11 @@ export interface DynamicPrayerState {
   remainingTimeFormatted: string;
   remainingSeconds: number;
   hijriDateBn: string;
+  bengaliDateBn: string;
+  gregorianDateBn: string;
+  sunriseTimeFormatted: string;
+  sunsetTimeFormatted: string;
+  waqtRangeFormatted: string;
   prayersList: PrayerTime[];
 }
 
@@ -304,6 +440,10 @@ export function calculatePrayerTimes(
     descriptionEn: nextItem.descriptionEn
   };
 
+  const sunriseTimeFormatted = format12Hour(sunriseDate.getHours(), sunriseDate.getMinutes(), 'BN');
+  const sunsetTimeFormatted = format12Hour(maghribDate.getHours(), maghribDate.getMinutes(), 'BN');
+  const waqtRangeFormatted = `${activeItem.nameBn} ${format12Hour(activeItem.date.getHours(), activeItem.date.getMinutes(), 'BN')} - ${format12Hour(nextTargetDate.getHours(), nextTargetDate.getMinutes(), 'BN')}`;
+
   return {
     currentWaqt,
     nextWaqt,
@@ -311,6 +451,11 @@ export function calculatePrayerTimes(
     remainingTimeFormatted,
     remainingSeconds: diffSec,
     hijriDateBn: getBanglaHijriDate(now),
+    bengaliDateBn: getBanglaCalendarDate(now),
+    gregorianDateBn: getBanglaGregorianDate(now),
+    sunriseTimeFormatted,
+    sunsetTimeFormatted,
+    waqtRangeFormatted,
     prayersList
   };
 }

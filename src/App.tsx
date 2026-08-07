@@ -18,13 +18,15 @@ import { QiblaCompassView } from './components/views/QiblaCompassView';
 import { SettingsView } from './components/views/SettingsView';
 import { GamifiedDeenView } from './components/views/GamifiedDeenView';
 import { PremiumFeaturesModal } from './components/views/PremiumFeaturesModal';
+import { PdfQuranView } from './components/views/PdfQuranView';
+import { BackgroundIllustration } from './components/BackgroundIllustration';
 
 import { TabType, Language, QazaRecord, AppSettings, PrayerTime } from './types';
 import { INITIAL_PRAYER_TIMES, INITIAL_QAZA_RECORD } from './data/prayersData';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [activeSubView, setActiveSubView] = useState<'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium' | null>(null);
+  const [activeSubView, setActiveSubView] = useState<'qaza' | 'hijri' | 'qibla' | 'settings' | 'gamified' | 'premium' | 'pdfquran' | null>(null);
   
   const [language, setLanguage] = useState<Language>('BN');
   const [district, setDistrict] = useState<string>('ঢাকা (Dhaka)');
@@ -85,8 +87,14 @@ export default function App() {
   return (
     <div className="w-full h-[100dvh] bg-slate-100 flex justify-center items-stretch sm:items-center p-0 sm:p-3 overflow-hidden">
       {/* Mobile / Web Container Frame */}
-      <div className="w-full max-w-md md:max-w-lg bg-white h-full sm:h-[96vh] sm:max-h-[96vh] sm:rounded-3xl shadow-xl flex flex-col overflow-hidden relative border-0 sm:border border-gray-200/80">
+      <div className="w-full max-w-md md:max-w-lg bg-stone-50 h-full sm:h-[96vh] sm:max-h-[96vh] sm:rounded-3xl shadow-xl flex flex-col overflow-hidden relative border-0 sm:border border-stone-200/80">
         
+        {/* Dynamic Feature-Matching Hand-drawn Watercolor Background */}
+        <BackgroundIllustration
+          activeTab={activeTab}
+          activeSubView={activeSubView}
+        />
+
         {/* Top App Bar */}
         <Header
           language={language}
@@ -96,8 +104,8 @@ export default function App() {
           onOpenNotifications={() => setIsNotificationsOpen(true)}
         />
 
-        {/* Main Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto px-5 py-4 pb-24">
+        {/* Main Scrollable Content Area with Glassmorphism support */}
+        <main className="flex-1 overflow-y-auto px-5 py-4 pb-24 relative z-10">
           {activeSubView === 'qaza' && (
             <QazaSalahView
               qazaRecord={qazaRecord}
@@ -145,6 +153,13 @@ export default function App() {
             />
           )}
 
+          {activeSubView === 'pdfquran' && (
+            <PdfQuranView
+              onBack={() => setActiveSubView(null)}
+              language={language}
+            />
+          )}
+
           {activeSubView === null && (
             <>
               {activeTab === 'home' && (
@@ -176,7 +191,10 @@ export default function App() {
               )}
 
               {activeTab === 'quran' && (
-                <QuranTab language={language} />
+                <QuranTab
+                  language={language}
+                  onOpenPdfViewer={() => setActiveSubView('pdfquran')}
+                />
               )}
 
               {activeTab === 'profile' && (

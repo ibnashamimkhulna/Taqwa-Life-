@@ -121,52 +121,52 @@ export const SURAH_VERSES_MAP: Record<number, Verse[]> = {
   1: [
     {
       number: 1,
-      arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-      transliteration: 'Bismillāhir-raḥmānir-raḥīm',
-      translationBn: 'পরম করুণাময় অসীম দয়ালু আল্লাহর নামে শুরু করছি।',
-      translationEn: 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'
-    },
-    {
-      number: 2,
       arabic: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
       transliteration: 'Al-ḥamdu lillāhi rabbil-ʿālamīn',
       translationBn: 'সমস্ত প্রশংসা একমাত্র আল্লাহর জন্য, যিনি সকল সৃষ্টির রব।',
       translationEn: '[All] praise is [due] to Allah, Lord of the worlds -'
     },
     {
-      number: 3,
+      number: 2,
       arabic: 'الرَّحْمَٰنِ الرَّحِيمِ',
       transliteration: 'Ar-raḥmānir-raḥīm',
       translationBn: 'যিনি পরম করুণাময় ও পরম দয়ালু।',
       translationEn: 'The Entirely Merciful, the Especially Merciful,'
     },
     {
-      number: 4,
+      number: 3,
       arabic: 'مَالِكِ يَوْمِ الدِّينِ',
       transliteration: 'Māliki yawmid-dīn',
       translationBn: 'যিনি প্রতিদান ও বিচার দিনের মালিক।',
       translationEn: 'Sovereign of the Day of Recompense.'
     },
     {
-      number: 5,
+      number: 4,
       arabic: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
       transliteration: 'Iyyāka naʿbudu wa-iyyāka nastaʿīn',
       translationBn: 'আমরা কেবল আপনারই ইবাদত করি এবং কেবল আপনারই নিকট সাহায্য প্রার্থনা করি।',
       translationEn: 'It is You we worship and You we ask for help.'
     },
     {
-      number: 6,
+      number: 5,
       arabic: 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ',
       transliteration: 'Ihdināṣ-ṣirāṭal-mustaqīm',
       translationBn: 'আমাদেরকে সরল ও সঠিক পথ প্রদর্শন করুন,',
       translationEn: 'Guide us to the straight path -'
     },
     {
+      number: 6,
+      arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ  مـ',
+      transliteration: 'Ṣirāṭal-laḏīna anʿamta ʿalayhim',
+      translationBn: 'তাদের পথ, যাদেরকে আপনি অনুগ্রহ করেছেন,',
+      translationEn: 'The path of those upon whom You have bestowed favor,'
+    },
+    {
       number: 7,
-      arabic: 'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
-      transliteration: 'Ṣirāṭal-laḏīna anʿamta ʿalayhim ghayril-maghḍūbi ʿalayhim wa-lāḍ-ḍāllīn',
-      translationBn: 'তাদের পথ, যাদেরকে আপনি অনুগ্রহ করেছেন; তাদের পথ নয় যারা অভিশপ্ত ও পথভ্রষ্ট।',
-      translationEn: 'The path of those upon whom You have bestowed favor, not of those who have earned [Your] anger or of those who are in error.'
+      arabic: 'غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
+      transliteration: 'Ghayril-maghḍūbi ʿalayhim wa-lāḍ-ḍāllīn',
+      translationBn: 'তাদের পথ নয় যারা অভিশপ্ত ও পথভ্রষ্ট।',
+      translationEn: 'not of those who have earned [Your] anger or of those who are in error.'
     }
   ],
   67: [
@@ -462,3 +462,20 @@ export function getSurahVerses(surahNumber: number): Verse[] {
 
   return generated;
 }
+
+// Page number index mapping for 604-page Emdadia Hafezi Quran
+export const SURAH_PAGES: Record<number, number> = {
+  1: 1, 2: 2, 3: 50, 4: 77, 5: 106, 6: 128, 7: 151, 8: 177, 9: 187, 10: 208,
+  11: 221, 12: 235, 13: 249, 14: 255, 15: 262, 16: 267, 17: 282, 18: 293, 19: 305, 20: 312,
+  21: 322, 22: 332, 23: 342, 24: 350, 25: 359, 26: 367, 27: 377, 28: 385, 29: 396, 30: 404,
+  31: 411, 32: 415, 33: 418, 34: 428, 35: 434, 36: 440, 37: 446, 38: 453, 39: 458, 40: 467,
+  41: 477, 42: 483, 43: 489, 44: 496, 45: 499, 46: 502, 47: 507, 48: 511, 49: 515, 50: 518,
+  51: 520, 52: 523, 53: 526, 54: 528, 55: 531, 56: 534, 57: 537, 58: 542, 59: 545, 60: 549,
+  61: 551, 62: 553, 63: 554, 64: 556, 65: 558, 66: 560, 67: 562, 68: 564, 69: 566, 70: 568,
+  71: 570, 72: 572, 73: 574, 74: 575, 75: 577, 76: 578, 77: 580, 78: 582, 79: 583, 80: 585,
+  81: 586, 82: 587, 83: 587, 84: 589, 85: 590, 86: 591, 87: 591, 88: 592, 89: 593, 90: 594,
+  91: 595, 92: 595, 93: 596, 94: 596, 95: 597, 96: 597, 97: 598, 98: 598, 99: 599, 100: 599,
+  101: 600, 102: 600, 103: 601, 104: 601, 105: 601, 106: 602, 107: 602, 108: 602, 109: 603, 110: 603,
+  111: 603, 112: 604, 113: 604, 114: 604
+};
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Surah, Verse, Language } from '../../types';
-import { SURAH_LIST, getSurahVerses } from '../../data/quranData';
+import { SURAH_LIST, getSurahVerses, SURAH_PAGES } from '../../data/quranData';
 import { fetchSurahVerses } from '../../utils/quranApi';
 import {
   Search,
@@ -15,15 +15,17 @@ import {
   FileText,
   Sliders,
   RotateCcw,
+  RotateCw,
   Sparkles,
   Loader2
 } from 'lucide-react';
 
 interface QuranTabProps {
   language: Language;
+  onOpenPdfViewer?: () => void;
 }
 
-export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
+export const QuranTab: React.FC<QuranTabProps> = ({ language, onOpenPdfViewer }) => {
   const [selectedSurah, setSelectedSurah] = useState<Surah | null>(null);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [isLoadingVerses, setIsLoadingVerses] = useState<boolean>(false);
@@ -32,6 +34,7 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
 
   // Audio State
   const [isPlaying, setIsPlaying] = useState(false);
+  const [activeAudioSurah, setActiveAudioSurah] = useState<Surah | null>(null);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -83,39 +86,31 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
   }, []);
 
   const handleSelectSurah = (surah: Surah) => {
-    // Stop any currently playing audio if switching Surah
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
     setSelectedSurah(surah);
-    setCurrentAudioUrl(null);
-    setAudioProgress(0);
-    setCurrentTime(0);
   };
 
   const togglePlayAudio = (surah: Surah) => {
     const targetUrl = surah.audioUrl || `https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/${surah.number}.mp3`;
 
-    if (isPlaying && currentAudioUrl === targetUrl && audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+    // If clicking on same active Surah
+    if (activeAudioSurah?.number === surah.number && audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {
+          const fallbackUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surah.number}.mp3`;
+          startNewAudio(fallbackUrl, surah);
+        });
+      }
       return;
     }
 
-    if (audioRef.current && currentAudioUrl === targetUrl) {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {
-        // Fallback CDN if main source fails
-        const fallbackUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surah.number}.mp3`;
-        startNewAudio(fallbackUrl);
-      });
-      return;
-    }
-
-    startNewAudio(targetUrl, surah.number);
+    // Starting audio for a new Surah
+    startNewAudio(targetUrl, surah);
   };
 
-  const startNewAudio = (url: string, surahNum?: number) => {
+  const startNewAudio = (url: string, surah: Surah) => {
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -124,6 +119,7 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
     newAudio.playbackRate = playbackSpeed;
     audioRef.current = newAudio;
     setCurrentAudioUrl(url);
+    setActiveAudioSurah(surah);
 
     newAudio.ontimeupdate = () => {
       if (newAudio.duration) {
@@ -140,17 +136,13 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
     };
 
     newAudio.onerror = () => {
-      if (surahNum) {
-        // Retry with alternative reliable CDN
-        const altUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surahNum}.mp3`;
-        const altAudio = new Audio(altUrl);
-        altAudio.playbackRate = playbackSpeed;
-        audioRef.current = altAudio;
-        setCurrentAudioUrl(altUrl);
-        altAudio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-      } else {
-        setIsPlaying(false);
-      }
+      // Retry with alternative reliable CDN
+      const altUrl = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${surah.number}.mp3`;
+      const altAudio = new Audio(altUrl);
+      altAudio.playbackRate = playbackSpeed;
+      audioRef.current = altAudio;
+      setCurrentAudioUrl(altUrl);
+      altAudio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     };
 
     newAudio.play()
@@ -161,11 +153,34 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
       });
   };
 
+  const handleSkipTime = (seconds: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(
+        Math.max(0, audioRef.current.currentTime + seconds),
+        audioDuration || 9999
+      );
+      setCurrentTime(audioRef.current.currentTime);
+      if (audioDuration) {
+        setAudioProgress((audioRef.current.currentTime / audioDuration) * 100);
+      }
+    }
+  };
+
   const handleSpeedChange = () => {
-    const nextSpeed = playbackSpeed === 1 ? 1.25 : playbackSpeed === 1.25 ? 1.5 : 1;
+    const nextSpeed = playbackSpeed === 1 ? 1.25 : playbackSpeed === 1.5 ? 2 : 1;
     setPlaybackSpeed(nextSpeed);
     if (audioRef.current) {
       audioRef.current.playbackRate = nextSpeed;
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPercent = parseFloat(e.target.value);
+    setAudioProgress(newPercent);
+    if (audioRef.current && audioDuration > 0) {
+      const targetTime = (newPercent / 100) * audioDuration;
+      audioRef.current.currentTime = targetTime;
+      setCurrentTime(targetTime);
     }
   };
 
@@ -197,25 +212,25 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
     return (
       <div className="space-y-4 animate-fade-in pb-8">
         {/* Navigation Bar */}
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-100 card-shadow flex items-center justify-between sticky top-14 z-20">
+        <div className="bg-emerald-950 text-white p-3.5 rounded-2xl border border-amber-300/40 shadow-xl flex items-center justify-between sticky top-14 z-20 backdrop-blur-md">
           <button
             onClick={() => {
               if (audioRef.current) audioRef.current.pause();
               setIsPlaying(false);
               setSelectedSurah(null);
             }}
-            className="flex items-center gap-1.5 text-xs font-bold text-forest bg-mint/40 px-3 py-1.5 rounded-xl hover:bg-mint smooth-press cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-white/10 px-3 py-1.5 rounded-xl hover:bg-white/20 smooth-press cursor-pointer border border-white/20"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>সূরা তালিকা</span>
           </button>
 
           <div className="text-center">
-            <h3 className="text-sm font-bold text-charcoal flex items-center justify-center gap-1.5">
+            <h3 className="text-sm font-bold text-amber-300 flex items-center justify-center gap-1.5">
               <span>{selectedSurah.nameBn}</span>
-              <span className="font-arabic text-forest">({selectedSurah.nameArabic})</span>
+              <span className="font-arabic text-amber-200">({selectedSurah.nameArabic})</span>
             </h3>
-            <p className="text-[10px] text-gray-500">
+            <p className="text-[10px] text-emerald-200/90 font-medium">
               সূরা নং {selectedSurah.number} • {selectedSurah.versesCount}টি আয়াত • {selectedSurah.revelationType === 'Meccan' ? 'মাক্কী' : 'মাদানী'}
             </p>
           </div>
@@ -223,7 +238,7 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
           <button
             onClick={() => togglePlayAudio(selectedSurah)}
             className={`w-9 h-9 rounded-full flex items-center justify-center text-white transition-all shadow-md cursor-pointer ${
-              isPlaying ? 'bg-amber-600 animate-pulse' : 'bg-forest hover:bg-forest-dark'
+              isPlaying ? 'bg-amber-500 animate-pulse text-charcoal' : 'bg-emerald-800 hover:bg-emerald-700 border border-amber-300/40'
             }`}
             title={isPlaying ? 'বিরতি দিন' : 'তেলাওয়াত শুনুন'}
           >
@@ -348,62 +363,102 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
           </div>
         ) : viewMode === 'hafezi' ? (
           <div
-            className={`p-4 sm:p-6 rounded-3xl border-4 transition-all duration-300 space-y-6 ${
+            className={`p-4 sm:p-6 rounded-3xl border-4 transition-all duration-300 space-y-4 ${
               paperTheme === 'cream'
-                ? 'bg-[#FFFDF3] text-[#2C1D11] border-amber-900/20 shadow-md'
+                ? 'bg-[#FFFDF3] text-[#2C1D11] border-amber-950/40 shadow-lg'
                 : paperTheme === 'dark'
-                ? 'bg-slate-950 text-slate-100 border-slate-800 shadow-md'
-                : 'bg-white text-gray-900 border-emerald-900/20 shadow-md'
+                ? 'bg-slate-950 text-amber-100 border-amber-500/50 shadow-2xl'
+                : 'bg-white text-gray-900 border-emerald-950/40 shadow-lg'
             }`}
           >
-            {/* Traditional Hafezi Quran Decorative Header */}
-            <div className="border-2 border-double border-amber-800/40 p-4 rounded-2xl text-center space-y-2 bg-gradient-to-r from-amber-500/5 via-amber-500/10 to-amber-500/5">
-              <div className="text-xs font-bold tracking-widest text-amber-800 uppercase">
-                {selectedSurah.revelationType === 'Meccan' ? 'سُورَةٌ مَكِّيَّةٌ' : 'سُورَةٌ مَدَنِيَّةٌ'}
+            {/* Page Header (Margin Banner) */}
+            <div className={`border-b-2 pb-2 flex justify-between items-center text-xs font-serif ${
+              paperTheme === 'dark' ? 'border-amber-500/40 text-amber-300' : 'border-amber-900/40 text-amber-900'
+            }`}>
+              <span className="font-bold">
+                {selectedSurah.number <= 2 ? 'المنجل ১ • الجزء ১' : `سورة ${selectedSurah.nameArabic}`}
+              </span>
+              <span className={`font-black text-sm px-2.5 py-0.5 rounded-md font-mono ${
+                paperTheme === 'dark' ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-amber-900/10 text-amber-950'
+              }`}>
+                সূরা {selectedSurah.number} (পৃষ্ঠা {SURAH_PAGES[selectedSurah.number] || selectedSurah.number})
+              </span>
+              <span className="font-bold">
+                {selectedSurah.revelationType === 'Meccan' ? 'مَكِّيَّةٌ' : 'مَدَنِيَّةٌ'}
+              </span>
+            </div>
+
+            {/* Traditional Hafezi Quran Ornamental Header Arch Box */}
+            <div className={`border-2 p-2 text-center rounded-xl space-y-1 my-2 ${
+              paperTheme === 'dark'
+                ? 'border-amber-400 bg-amber-950/60 text-amber-300'
+                : 'border-amber-950 bg-amber-100/50 text-amber-950'
+            }`}>
+              <div className="flex justify-between items-center text-[11px] font-bold px-3">
+                <span>آيَاتُهَا {toArabicNumber(selectedSurah.versesCount)}</span>
+                <h2 className="text-xl sm:text-2xl font-arabic font-black">
+                  سُورَةُ {selectedSurah.nameArabic}
+                </h2>
+                <span>رُكُوعُهَا {toArabicNumber(Math.ceil(selectedSurah.versesCount / 10))}</span>
               </div>
-              <h2
-                className="font-arabic font-bold text-amber-900 drop-shadow-xs leading-none"
-                style={{ fontSize: `${fontSize + 8}px` }}
-              >
-                سُورَةُ {selectedSurah.nameArabic}
-              </h2>
-              <div className="text-[11px] font-sans font-medium text-amber-700/80">
-                {selectedSurah.nameBn} • আয়াত সংখ্যা: {selectedSurah.versesCount}
+              <div className={`text-[11px] font-sans font-extrabold ${paperTheme === 'dark' ? 'text-amber-200' : 'text-amber-800'}`}>
+                {selectedSurah.nameBn} ({selectedSurah.meaningBn})
               </div>
             </div>
 
-            {/* Bismillah Header (Except Surah At-Tawbah #9) */}
+            {/* Bismillah Banner Box (Except Surah At-Tawbah #9) */}
             {selectedSurah.number !== 9 && (
-              <div className="text-center py-2">
+              <div className={`border py-2 px-4 text-center rounded-lg shadow-xs my-2 ${
+                paperTheme === 'dark'
+                  ? 'border-amber-400/80 bg-slate-900 text-amber-300'
+                  : 'border-amber-900/60 bg-amber-50/80 text-amber-950'
+              }`}>
                 <p
-                  className="font-arabic font-bold text-amber-800/90 leading-relaxed"
-                  style={{ fontSize: `${fontSize + 4}px` }}
+                  className="font-arabic font-black tracking-wide"
+                  style={{ fontSize: `${fontSize + 2}px` }}
                 >
                   بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
                 </p>
               </div>
             )}
 
-            {/* Continuous Hafezi Text Block with Verse End Symbols ۝ */}
+            {/* 15-Line Ruled Bangladeshi Hafezi Quran Grid */}
             <div
-              className="font-arabic font-bold text-right leading-[2.6] tracking-wide dir-rtl space-y-4 pt-2"
+              className={`border rounded-xl divide-y text-right font-arabic font-bold leading-relaxed shadow-inner ${
+                paperTheme === 'dark'
+                  ? 'border-amber-500/60 divide-amber-500/30 bg-slate-900/90 text-amber-100'
+                  : 'border-amber-950/70 divide-amber-950/25 bg-[#FFFDF5] text-amber-950'
+              }`}
               style={{ fontSize: `${fontSize}px` }}
             >
-              <p className="inline text-justify">
-                {verses.map((v) => (
-                  <React.Fragment key={v.number}>
-                    <span>{v.arabic}</span>
-                    <span className="inline-flex items-center justify-center mx-1.5 text-amber-700 font-sans text-xs px-1.5 py-0.5 rounded-full border border-amber-700/30 bg-amber-500/10">
-                      ۝{toArabicNumber(v.number)}
-                    </span>
-                  </React.Fragment>
-                ))}
-              </p>
+              {verses.map((v) => (
+                <div
+                  key={v.number}
+                  className={`p-2.5 flex items-center justify-between gap-3 transition-colors ${
+                    paperTheme === 'dark' ? 'hover:bg-amber-950/40' : 'hover:bg-amber-100/30'
+                  }`}
+                >
+                  <p className="flex-1 text-right leading-loose font-arabic">
+                    {v.arabic}
+                  </p>
+                  <span className={`text-xs font-sans font-extrabold border rounded-full w-6 h-6 flex items-center justify-center shrink-0 shadow-xs ${
+                    paperTheme === 'dark'
+                      ? 'text-amber-300 border-amber-400 bg-amber-950/80'
+                      : 'text-amber-900 border-amber-900/80 bg-amber-100'
+                  }`}>
+                    {toArabicNumber(v.number)}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            {/* Footer Notice */}
-            <div className="border-t border-amber-900/10 pt-4 text-center text-[10px] text-amber-800/60 font-medium">
-              বাংলাদেশী স্ট্যান্ডার্ড হাফেজী কুরআন মোড • বিশুদ্ধ আরবি পাঠ
+            {/* Bottom Footer Notice */}
+            <div className={`border-t pt-2 flex justify-between items-center text-[10px] font-sans font-medium ${
+              paperTheme === 'dark' ? 'border-amber-500/30 text-amber-300/80' : 'border-amber-900/20 text-amber-900/80'
+            }`}>
+              <span>এমদাদিয়া লাইব্রেরী ঢাকা • নূরানী ১৫-লাইন প্রিন্ট</span>
+              <span className="font-bold">তাকওয়া হাফেজী কোরআন শরীফ</span>
+              <span>মনজিল ১</span>
             </div>
           </div>
         ) : (
@@ -488,9 +543,37 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
   // Render 114 Surahs Index List
   return (
     <div className="space-y-4 animate-fade-in pb-8">
+      {/* Prominent "দেখে কুরআন পড়ুন" Mode Entry Banner */}
+      {onOpenPdfViewer && (
+        <div
+          onClick={onOpenPdfViewer}
+          className="bg-emerald-950/60 hover:bg-emerald-950/70 backdrop-blur-xl text-white p-4.5 rounded-3xl border border-white/40 shadow-xl flex items-center justify-between cursor-pointer smooth-press transition-all group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-amber-300 shrink-0 border border-white/30">
+              <FileText className="w-6 h-6 text-amber-300" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
+                <span>📖 দেখে কুরআন পড়ুন (হাফেজী ও পিডিএফ মোড)</span>
+                <span className="text-[9px] bg-amber-400 text-charcoal font-black px-1.5 py-0.2 rounded-md shadow-xs">
+                  NEW
+                </span>
+              </h4>
+              <p className="text-[11px] text-emerald-100/90 mt-0.5 font-medium">
+                পারা, সূরা, পৃষ্ঠা ও আয়াত দিয়ে সরাসরি হাফেজী ও নিজস্ব PDF কুরআনে পাঠ করুন
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-black text-charcoal bg-amber-300 hover:bg-white px-3.5 py-2 rounded-2xl shrink-0 shadow-md transition-all border border-white/40">
+            ওপেন করুন →
+          </span>
+        </div>
+      )}
+
       {/* Search Input Box */}
-      <div className="bg-white p-3 rounded-2xl border border-gray-100 card-shadow flex items-center gap-2">
-        <Search className="w-4 h-4 text-forest shrink-0 ml-1" />
+      <div className="bg-white/45 backdrop-blur-xl p-3.5 rounded-3xl border border-white/70 shadow-lg shadow-emerald-950/5 flex items-center gap-2">
+        <Search className="w-4.5 h-4.5 text-forest shrink-0 ml-1" />
         <input
           type="text"
           value={searchQuery}
@@ -500,12 +583,12 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
               ? 'সূরা খুঁজুন (যেমন: ইয়াসীন, রহমান, ১, ১১৪...)'
               : 'Search Surah name or number...'
           }
-          className="w-full text-xs text-charcoal outline-none bg-transparent placeholder:text-gray-400 font-sans"
+          className="w-full text-xs text-charcoal font-bold outline-none bg-transparent placeholder:text-gray-400 font-sans"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="text-xs font-bold text-gray-400 hover:text-charcoal px-2"
+            className="text-xs font-black text-gray-500 hover:text-charcoal px-2"
           >
             মুছুন
           </button>
@@ -513,81 +596,198 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language }) => {
       </div>
 
       {/* Surah List Header Banner */}
-      <div className="bg-gradient-to-r from-forest to-forest-dark text-white p-4 rounded-2xl card-shadow flex items-center justify-between">
+      <div className="bg-emerald-900/50 backdrop-blur-xl text-white p-4 rounded-3xl border border-white/30 shadow-md flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-mint" />
-            <span>পবিত্র আল-কুরআনের সূরাসমূহ</span>
+          <h3 className="text-sm font-extrabold flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-emerald-200" />
+            <span>পবিত্র আল-কুরআনের সূরাসমূহ (১১৪টি)</span>
           </h3>
-          <p className="text-[10px] text-white/80 mt-0.5">
-            সম্পূর্ণ ১১৪টি সূরা • অডিও তেলাওয়াত ও হাফেজী কুরআন মোড
+          <p className="text-[10px] text-emerald-100/80 mt-0.5">
+            প্রতিটি সূরার অডিও তেলাওয়াত, প্লেয়ার প্রোগ্রেস বার ও হাফেজী মোড
           </p>
         </div>
 
-        <span className="text-xs font-black bg-mint text-forest px-3 py-1 rounded-xl shadow-xs">
+        <span className="text-xs font-black bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-2xl border border-white/30 shadow-xs">
           ১১৪টি সূরা
         </span>
       </div>
 
       {/* Surah List Items */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {filteredSurahs.length === 0 ? (
-          <div className="bg-white p-6 rounded-2xl text-center text-xs text-gray-500 border border-gray-100">
+          <div className="bg-white/45 backdrop-blur-xl p-6 rounded-3xl text-center text-xs text-gray-600 font-bold border border-white/70 shadow-lg">
             কোনো সূরা খুঁজে পাওয়া যায়নি। অনুসন্ধানের বানান পরীক্ষা করুন।
           </div>
         ) : (
-          filteredSurahs.map((surah) => (
-            <div
-              key={surah.number}
-              onClick={() => handleSelectSurah(surah)}
-              className="p-3.5 bg-white hover:bg-mint/30 rounded-2xl border border-gray-100 card-shadow flex items-center justify-between cursor-pointer transition-all duration-200 group"
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-9 h-9 bg-mint text-forest font-black rounded-xl flex items-center justify-center text-xs shadow-xs group-hover:bg-forest group-hover:text-white transition-colors">
-                  {surah.number}
-                </span>
+          filteredSurahs.map((surah) => {
+            const isActiveAudio = activeAudioSurah?.number === surah.number;
+            const isThisPlaying = isActiveAudio && isPlaying;
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-bold text-charcoal group-hover:text-forest transition-colors">
-                      {language === 'BN' ? surah.nameBn : surah.nameEn}
-                    </h4>
-                    <span className="text-[9px] bg-softbg text-gray-500 px-2 py-0.5 rounded-full font-medium border border-gray-100">
-                      {surah.revelationType === 'Meccan' ? 'মাক্কী' : 'মাদানী'}
+            return (
+              <div
+                key={surah.number}
+                className={`bg-white/45 hover:bg-white/65 backdrop-blur-xl rounded-3xl border transition-all duration-300 shadow-lg shadow-emerald-950/5 overflow-hidden ${
+                  isActiveAudio
+                    ? 'border-emerald-500 ring-2 ring-emerald-400/30 bg-white/75'
+                    : 'border-white/70 hover:border-emerald-500/40'
+                }`}
+              >
+                {/* Fixed Uniform Alignment Row across all Surah slots */}
+                <div
+                  onClick={() => handleSelectSurah(surah)}
+                  className="p-3.5 flex items-center justify-between gap-2 sm:gap-3 cursor-pointer group"
+                >
+                  {/* Col 1: Number Badge */}
+                  <span className="w-9 h-9 bg-forest/20 backdrop-blur-md text-forest font-black rounded-2xl flex items-center justify-center text-xs border border-forest/30 shadow-xs group-hover:bg-forest group-hover:text-white transition-colors shrink-0">
+                    {surah.number}
+                  </span>
+
+                  {/* Col 2: Bengali / English Name & Details */}
+                  <div className="flex-1 min-w-0 pr-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="text-xs sm:text-sm font-black text-charcoal group-hover:text-forest transition-colors truncate">
+                        {language === 'BN' ? surah.nameBn : surah.nameEn}
+                      </h4>
+                      <span className="text-[9px] bg-white/50 text-emerald-950 px-2 py-0.2 rounded-full font-bold border border-white/80 shrink-0">
+                        {surah.revelationType === 'Meccan' ? 'মাক্কী' : 'মাদানী'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-emerald-950/80 font-medium mt-0.5 truncate">
+                      অর্থ: {surah.meaningBn} • {surah.versesCount}টি আয়াত
+                    </p>
+                  </div>
+
+                  {/* Col 3: Arabic Name (Fixed Column Width for Perfect Vertical Alignment) */}
+                  <div className="w-24 sm:w-28 text-right shrink-0">
+                    <span className="font-arabic text-lg font-bold text-forest block truncate">
+                      {surah.nameArabic}
                     </span>
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-0.5">
-                    অর্থ: {surah.meaningBn} • {surah.versesCount}টি আয়াত
-                  </p>
+
+                  {/* Col 4: Audio Play/Pause Button (Fixed Column Width on Far Right) */}
+                  <div className="w-10 flex justify-end shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlayAudio(surah);
+                      }}
+                      className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all cursor-pointer ${
+                        isThisPlaying
+                          ? 'bg-amber-500 text-white shadow-md animate-pulse border border-white/30'
+                          : isActiveAudio
+                          ? 'bg-forest text-white shadow-xs'
+                          : 'bg-forest/15 text-forest hover:bg-forest hover:text-white border border-forest/20 shadow-xs'
+                      }`}
+                      title={isThisPlaying ? 'পজ করুন' : 'অডিও শুনুন'}
+                    >
+                      {isThisPlaying ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Play className="w-4 h-4 ml-0.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePlayAudio(surah);
-                  }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    isPlaying && currentAudioUrl?.includes(`/${surah.number}.mp3`)
-                      ? 'bg-amber-500 text-white animate-pulse'
-                      : 'bg-mint/60 text-forest hover:bg-forest hover:text-white'
-                  }`}
-                  title="অডিও প্লে করুন"
-                >
-                  {isPlaying && currentAudioUrl?.includes(`/${surah.number}.mp3`) ? (
-                    <Pause className="w-3.5 h-3.5" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 ml-0.5" />
-                  )}
-                </button>
+                {/* Inline Persistent Audio Player Bar (Stays visible on Pause) */}
+                {isActiveAudio && (
+                  <div className="bg-gradient-to-r from-emerald-950 via-forest-dark to-emerald-900 text-white p-3.5 border-t border-emerald-800/80 space-y-2.5 animate-fade-in">
+                    {/* Header info */}
+                    <div className="flex items-center justify-between text-xs font-bold text-mint">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <Volume2 className="w-4 h-4 text-softgold shrink-0" />
+                        <span>তেলাওয়াত: {surah.nameBn} (সূরা {surah.number})</span>
+                      </span>
+                      <span className="text-[10px] bg-emerald-800/80 px-2 py-0.5 rounded-md text-amber-300 font-mono">
+                        {isPlaying ? '▶ প্লে হচ্ছে' : '⏸ পজ করা আছে'}
+                      </span>
+                    </div>
 
-                <span className="font-arabic text-lg font-bold text-forest">
-                  {surah.nameArabic}
-                </span>
+                    {/* Progress Slider (Scrubber Bar) */}
+                    <div className="space-y-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={audioProgress}
+                        onChange={handleSeek}
+                        className="w-full h-2 bg-emerald-800 rounded-lg appearance-none cursor-pointer accent-softgold"
+                      />
+                      <div className="flex justify-between items-center text-[10px] text-emerald-200 font-mono">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(audioDuration)}</span>
+                      </div>
+                    </div>
+
+                    {/* Rich Player Controls Bar (Rewind 10s, Play/Pause, Forward 10s, Speed) */}
+                    <div className="flex items-center justify-between pt-1 gap-2">
+                      <div className="flex items-center gap-1.5">
+                        {/* Speed Button */}
+                        <button
+                          onClick={handleSpeedChange}
+                          className="px-2.5 py-1 bg-emerald-800/90 hover:bg-emerald-700 text-softgold rounded-lg text-[10px] font-black cursor-pointer transition-colors"
+                          title="তেলাওয়াতের গতি পরিবর্তন করুন"
+                        >
+                          {playbackSpeed}x
+                        </button>
+                      </div>
+
+                      {/* Main Audio Transport Controls Centered */}
+                      <div className="flex items-center gap-2">
+                        {/* -10 Sec Rewind */}
+                        <button
+                          onClick={() => handleSkipTime(-10)}
+                          className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1"
+                          title="১০ সেকেন্ড পেছনে যান"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 text-amber-300" />
+                          <span>-১০ সে.</span>
+                        </button>
+
+                        {/* Play/Pause Toggle */}
+                        <button
+                          onClick={() => togglePlayAudio(surah)}
+                          className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md ${
+                            isPlaying
+                              ? 'bg-amber-500 text-white hover:bg-amber-600'
+                              : 'bg-softgold text-charcoal hover:bg-white'
+                          }`}
+                        >
+                          {isPlaying ? (
+                            <>
+                              <Pause className="w-3.5 h-3.5" />
+                              <span>পজ ⏸</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-3.5 h-3.5 fill-current" />
+                              <span>পুনরায় চালান ▶</span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* +10 Sec Forward */}
+                        <button
+                          onClick={() => handleSkipTime(10)}
+                          className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1"
+                          title="১০ সেকেন্ড সামনে যান"
+                        >
+                          <span>+১০ সে.</span>
+                          <RotateCw className="w-3.5 h-3.5 text-amber-300" />
+                        </button>
+                      </div>
+
+                      {/* Right indicator */}
+                      <span className="text-[10px] text-emerald-300 hidden sm:inline">
+                        মেশারী আল-আফাসী
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { ISLAMIC_EVENTS } from '../../data/eventsData';
 import { Language } from '../../types';
 import { ArrowLeft, Calendar as CalendarIcon, Star, Moon, Sparkles } from 'lucide-react';
+import { getBanglaHijriDate, getBanglaGregorianDate, getBanglaCalendarDate } from '../../utils/prayerCalculator';
 
 interface HijriCalendarViewProps {
   onBack: () => void;
@@ -9,6 +10,10 @@ interface HijriCalendarViewProps {
 }
 
 export const HijriCalendarView: React.FC<HijriCalendarViewProps> = ({ onBack, language }) => {
+  const todayHijri = getBanglaHijriDate(new Date());
+  const todayGregorian = getBanglaGregorianDate(new Date());
+  const todayBanglaSan = getBanglaCalendarDate(new Date());
+
   return (
     <div className="space-y-4 animate-fade-in pb-4">
       {/* Top Header */}
@@ -27,13 +32,17 @@ export const HijriCalendarView: React.FC<HijriCalendarViewProps> = ({ onBack, la
       </div>
 
       {/* Hijri Today Banner */}
-      <div className="bg-gradient-to-br from-forest to-forest-dark text-white p-6 rounded-2xl text-center card-shadow relative overflow-hidden border border-forest/20">
-        <Moon className="w-10 h-10 text-mint mx-auto mb-2 opacity-90" />
-        <span className="text-[10px] uppercase font-bold tracking-widest bg-softgold text-charcoal px-3 py-0.5 rounded-full">
+      <div className="bg-gradient-to-br from-emerald-950 via-forest to-emerald-900 text-white p-6 rounded-2xl text-center card-shadow relative overflow-hidden border border-amber-300/30">
+        <Moon className="w-10 h-10 text-amber-300 mx-auto mb-2 opacity-95 animate-pulse" />
+        <span className="text-[10px] uppercase font-bold tracking-widest bg-amber-400 text-charcoal px-3.5 py-1 rounded-full shadow-xs">
           আজকের হিজরি তারিখ
         </span>
-        <h2 className="text-2xl font-bold text-white mt-2">১৭ রমজান ১৪৪৭ হিজরি</h2>
-        <p className="text-xs text-mint/80 mt-1">৭ মার্চ ২০২৬ খ্রিস্টাব্দ (শনিবার)</p>
+        <h2 className="text-2xl font-black text-amber-300 mt-2 tracking-wide drop-shadow-md">
+          {todayHijri}
+        </h2>
+        <p className="text-xs text-emerald-100 font-bold mt-1">
+          {todayGregorian} • <span className="text-amber-200">{todayBanglaSan}</span>
+        </p>
       </div>
 
       {/* Events List */}
