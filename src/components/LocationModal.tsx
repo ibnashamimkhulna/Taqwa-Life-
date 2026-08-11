@@ -28,34 +28,86 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       d.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Helper for IP Geolocation fallback
+  const fetchIpLocation = async (): Promise<{ lat: number; lon: number; cityName?: string } | null> => {
+    try {
+      const res = await fetch('https://ipwho.is/');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.latitude && data.longitude) {
+          return { lat: data.latitude, lon: data.longitude, cityName: data.city };
+        }
+      }
+    } catch (e) {
+      console.warn('ipwho.is failed');
+    }
+
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.latitude && data.longitude) {
+          return { lat: data.latitude, lon: data.longitude, cityName: data.city };
+        }
+      }
+    } catch (e) {
+      console.warn('ipapi.co failed');
+    }
+
+    return null;
+  };
+
   const handleGpsDetect = () => {
+    setIsGpsLoading(true);
+    setStatusMessage('অবস্থান ও লোকেশন খোঁজা হচ্ছে...');
+
+    const applyLocation = (lat: number, lon: number, method: string) => {
+      setIsGpsLoading(false);
+      const nearest = findNearestDistrict(lat, lon);
+      onSelectDistrict(nearest.fullName);
+      setStatusMessage(`${method} সফল! আপনার জেলা '${nearest.fullName}' সনাক্ত করা হয়েছে।`);
+      setTimeout(() => {
+        onClose();
+      }, 1200);
+    };
+
+    const tryIpFallback = async () => {
+      setStatusMessage('নেটওয়ার্ক (IP) দিয়ে লোকেশন সনাক্ত করা হচ্ছে...');
+      const ipLoc = await fetchIpLocation();
+      if (ipLoc) {
+        applyLocation(ipLoc.lat, ipLoc.lon, 'অটো নেটওয়ার্ক (IP)');
+      } else {
+        setIsGpsLoading(false);
+        setStatusMessage('GPS বা নেটওয়ার্ক থেকে লোকেশন পাওয়া যায়নি। ম্যানুয়ালি নিচ থেকে জেলা সিলেক্ট করুন।');
+      }
+    };
+
     if (!('geolocation' in navigator)) {
-      setStatusMessage('আপনার ব্রাউজার বা ডিভাইসে GPS সমর্থিত নয়। অনুগ্রহ করে তালিকা থেকে জেলা বেছে নিন।');
+      tryIpFallback();
       return;
     }
 
-    setIsGpsLoading(true);
-    setStatusMessage('GPS লোকেশন খোঁজা হচ্ছে...');
-
+    // Attempt 1: Low Accuracy GPS (Fastest and works best in Mobile WebViews/APKs)
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setIsGpsLoading(false);
-        const { latitude, longitude } = position.coords;
-        const nearest = findNearestDistrict(latitude, longitude);
-
-        onSelectDistrict(nearest.fullName);
-        setStatusMessage(`GPS সফল! আপনার নিকটবর্তী জেলা '${nearest.fullName}' পাওয়া গেছে। সালাতের সময় আপডেট করা হয়েছে।`);
-        
-        setTimeout(() => {
-          onClose();
-        }, 1200);
+      (pos) => {
+        applyLocation(pos.coords.latitude, pos.coords.longitude, 'GPS');
       },
-      (error) => {
-        setIsGpsLoading(false);
-        console.warn('Geolocation error:', error);
-        setStatusMessage('GPS লোকেশন অ্যাক্সেস নেওয়া যায়নি। ম্যানুয়ালি নিচে থেকে আপনার জেলা সিলেক্ট করুন।');
+      (err1) => {
+        console.warn('GPS low-accuracy failed/timed out:', err1);
+        // Attempt 2: High Accuracy GPS
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            applyLocation(pos.coords.latitude, pos.coords.longitude, 'GPS');
+          },
+          (err2) => {
+            console.warn('GPS high-accuracy failed:', err2);
+            // Attempt 3: IP Geolocation Fallback
+            tryIpFallback();
+          },
+          { enableHighAccuracy: true, timeout: 6000, maximumAge: 60000 }
+        );
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
     );
   };
 

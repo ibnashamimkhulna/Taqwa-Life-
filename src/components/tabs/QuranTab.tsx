@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Surah, Verse, Language } from '../../types';
 import { SURAH_LIST, getSurahVerses, SURAH_PAGES } from '../../data/quranData';
 import { fetchSurahVerses } from '../../utils/quranApi';
@@ -66,14 +66,18 @@ export const QuranTab: React.FC<QuranTabProps> = ({ language, onOpenPdfViewer })
     }
   }, [selectedSurah]);
 
-  // Filter 114 Surahs
-  const filteredSurahs = SURAH_LIST.filter(
-    (s) =>
-      s.nameBn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.meaningBn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.number.toString() === searchQuery.trim()
-  );
+  // Filter 114 Surahs with useMemo for high performance on mobile devices
+  const filteredSurahs = useMemo(() => {
+    if (!searchQuery.trim()) return SURAH_LIST;
+    const q = searchQuery.toLowerCase().trim();
+    return SURAH_LIST.filter(
+      (s) =>
+        s.nameBn.toLowerCase().includes(q) ||
+        s.nameEn.toLowerCase().includes(q) ||
+        s.meaningBn.toLowerCase().includes(q) ||
+        s.number.toString() === q
+    );
+  }, [searchQuery]);
 
   // Audio setup and cleanup
   useEffect(() => {

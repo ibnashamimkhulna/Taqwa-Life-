@@ -87,9 +87,9 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-[100dvh] bg-slate-100 flex justify-center items-stretch sm:items-center p-0 sm:p-3 overflow-hidden">
+    <div className="w-full h-[100dvh] bg-slate-100 flex justify-center items-stretch sm:items-center p-0 sm:p-3 overflow-hidden select-none overscroll-none">
       {/* Mobile / Web Container Frame */}
-      <div className="w-full max-w-md md:max-w-lg bg-stone-50 h-full sm:h-[96vh] sm:max-h-[96vh] sm:rounded-3xl shadow-xl flex flex-col overflow-hidden relative border-0 sm:border border-stone-200/80">
+      <div className="w-full max-w-md md:max-w-lg bg-stone-50 h-full sm:h-[96vh] sm:max-h-[96vh] sm:rounded-3xl shadow-xl flex flex-col overflow-hidden relative border-0 sm:border border-stone-200/80 overscroll-none">
         
         {/* Dynamic Feature-Matching Hand-drawn Watercolor Background */}
         <BackgroundIllustration
@@ -107,7 +107,7 @@ export default function App() {
         />
 
         {/* Main Scrollable Content Area with Glassmorphism support */}
-        <main className="flex-1 overflow-y-auto px-5 py-4 pb-24 relative z-10">
+        <main className="flex-1 overflow-y-auto px-5 py-4 pb-24 relative z-10 overscroll-contain touch-pan-y">
           {activeSubView === 'qaza' && (
             <QazaSalahView
               qazaRecord={qazaRecord}

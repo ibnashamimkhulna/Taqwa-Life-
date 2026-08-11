@@ -18,6 +18,29 @@ body {
   background-color: #F8FBF9;
   color: #263238;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+html, #root {
+  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+/* Ensure scrollable main containers don't trigger browser reload */
+main, .overflow-y-auto {
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hardware acceleration for mobile WebView performance */
+.backdrop-blur-md, .backdrop-blur-xl, .backdrop-blur-sm, .backdrop-blur {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .font-arabic {
